@@ -6,16 +6,15 @@ import io
 class My_Dash():
     def __init__(self):
         self.data = None # 整個活頁簿
+        self.by_date = None # (sheet:SMT_BY日期總表) 給圓餅圖用
 
-        self.by_date = None # 給每日的圓餅圖用的
         self.day = None # 給每日的下方表格
         self.fig_fordaily = None # 保存每日的圓餅圖
-        self.options = None # 保存已發生的工作天
+        self.options = None # 保存日期選單
 
-        self.weekly_options = None # 保存周別選項
+        self.weekly_options = None # 保存周別選單
+        self.fig_forweek = None # 保存每周的圓餅圖
         
-        self.act_col = None
-        self.by_date_col = None
     
     def anyNone(self, *args):
         for i in args:
