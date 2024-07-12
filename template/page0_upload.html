@@ -103,7 +103,7 @@
                 // Disable future months if the selected year is the current year
                 for (let option of monthSelect.options) {
                     if (option.value) {
-                        option.disabled = selectedYear === currentYear && parseInt(option.value, 10) > currentMonth;
+                        option.disabled = selectedYear === currentYear && parseInt(option.value, 10) >= currentMonth;
                     }
                 }
             } else {

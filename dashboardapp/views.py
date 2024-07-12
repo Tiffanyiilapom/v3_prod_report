@@ -95,6 +95,13 @@ def nozero(str):
         str = str[1:]
     return str
 
+def process_date(data):
+    dates = data['日期'].astype(str).str.replace(r'\.0$',"",regex=True)
+    numeric_data = data.drop('日期',axis=1).astype(float).round(2)
+    final_data = numeric_data.copy()
+    final_data['日期'] = dates
+    final_data = final_data[['日期'] + [col for col in numeric_data.columns]]
+    return final_data
 
 def upload(request):
     current_year = int(datetime.now().year)
@@ -298,7 +305,7 @@ def weekly(request):
             '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
         week_data = table_data[table_data['日期'].isin(dates)].copy()
         week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
-        dash.week = week_data.astype(float).round(2)
+        dash.week = process_date(week_data)
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
@@ -347,7 +354,7 @@ def weekly(request):
             '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
         week_data = table_data[table_data['日期'].isin(dates)].copy()
         week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
-        dash.week = week_data.astype(float).round(2)
+        dash.week = process_date(week_data)
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
