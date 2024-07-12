@@ -79,19 +79,23 @@ def get_all_workdays(year,month,df):
         formatted_dates.append(formatted_date)
     return formatted_dates
 
-# 找到指定年、月的最後一個工作天 (for跳轉預設) 
-def get_last_working_day(year, month):
-    # 先找當月的最後一天
-    if month == 12:
-        next_month = datetime(year + 1, 1, 1)
-    else:
-        next_month = datetime(year, month + 1, 1)
-    last_day_of_month = next_month - timedelta(days=1)
+def find_date_ranges(dates):
+    dates = sorted([datetime.strptime(date, '%Y-%m-%d') for date in dates])
+    result = []
+    start_date = dates[0]
+    end_date = dates[0]
 
-    while last_day_of_month.weekday() >= 5:  
-        last_day_of_month -= timedelta(days=1)
+    # 把斷掉的切開
+    for current_date in dates[1:]:
+        if current_date == end_date + timedelta(days=1):
+            end_date = current_date
+        else:
+            result.append(f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}")
+            start_date = current_date
+            end_date = current_date
 
-    return last_day_of_month
+    result.append(f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}")
+    return result
 
 def upload(request):
     current_year = int(datetime.now().year)
@@ -279,13 +283,73 @@ def daily(request):
             'data': placeholder_df.values.tolist(),
             'columns': placeholder_df.columns,
             'placeholder_fig': placeholder_fig,
-            'options': dash.options,
+            #'options': dash.options,
         }
         return render(request, 'page1_daily.html',context)
 
 
 def weekly(request):
-    return render(request, "page2_weekly.html")
+    global dash
+    # 先暫時不要用圖
+    placeholder_fig = dash.placeholder_figure()
+    placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+    # 預設跳轉至當周
+    if not dash.anyNone(dash.by_date): 
+        
+        dates = dash.options
+        options = find_date_ranges(dates)
+        dash.weekly_options = options
+        context = {
+            'placeholder_fig': placeholder_fig,
+            'options': dash.weekly_options,
+        }
+        
+        return render(request, 'page2_weekly.html',context)
+    
+    # 選擇別週
+    elif request.method == "POST" and 'select_week_button' in request.POST:
+        select_week = request.POST.get("select2")
+        '''
+
+        # 取出要畫圓餅圖的資料及欄位
+        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
+        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
+        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
+        # 確認取出的資料只有一筆
+        if pie_data.ndim == 1:
+            # 分鐘的換成小時
+            pie_data['调机工时Setup(min)'] /= 60
+            pie_data['機台維修時間\n  Down(min)'] /= 60
+            pie_data['製程異常\n時間Hold(min)'] /= 60
+            pie_data['物料異常\n時間Hold(min)'] /= 60
+            pie_data['借出工時RD(min)'] /= 60
+            pie_data['待料時間/其它Idel(min)'] /= 60
+        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
+        pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+        title = select_day +' SMT Production Time Distribution'
+
+        fig = px.pie(names=labels, values=pie_data.values, title=title)
+        fig.update_layout(height=600, width=1000)
+        fig_html = pio.to_html(fig, full_html=False)
+        dash.fig_fordaily = fig_html
+        '''
+
+        context = {
+            'placeholder_fig': placeholder_fig,
+            'options': dash.weekly_options,
+        }
+
+        return render(request, 'page2_weekly.html',context)
+    
+    else: # 如果還沒上傳資料就點過來
+        placeholder_fig = dash.placeholder_figure()
+        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+        context = {
+            'placeholder_fig': placeholder_fig,
+        }
+        return render(request, 'page2_weekly.html',context)
 
 def monthly(request):
     return render(request, "page3_monthly.html")

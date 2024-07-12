@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/datatable.css' %}" type="text/css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
     <title>{% block title %}SMT 生產報表{% endblock %}</title>
 </head>
@@ -31,10 +33,32 @@
                     </li>
                 </ul>
             </div>
+            <form class="d-flex" method="POST" action="/weekly/">
+                {% csrf_token %}
+                <div style="padding: 0px 1.5px;"></div>
+                    <select class="form-select" id="select2" name="select2">
+                        <option value="" disabled selected>另擇特定周次</option>
+                        {% for option in options %}
+                            <option value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="btn btn-secondary my-2 my-sm-0" type="submit" name="select_week_button">Go</button>
+            </form>
         </div>
     </nav>
     <div class="container mt-4">
-    
+        {% if placeholder_fig %}
+        {% autoescape off %}
+        {{ placeholder_fig|safe }}
+        {% endautoescape %}
+        {% endif %}
     </div>
+    
 </body>
+<script>
+    
+
+</script>
+
 </html>

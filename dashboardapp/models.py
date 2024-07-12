@@ -11,6 +11,8 @@ class My_Dash():
         self.day = None # 給每日的下方表格
         self.fig_fordaily = None # 保存每日的圓餅圖
         self.options = None # 保存已發生的工作天
+
+        self.weekly_options = None # 保存周別選項
         
         self.act_col = None
         self.by_date_col = None
