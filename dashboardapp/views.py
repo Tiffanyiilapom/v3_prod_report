@@ -292,6 +292,15 @@ def weekly(request):
         start = int(nozero(select_week[8:10])) # 該周的開始
         end = int(nozero(select_week[-2:])) # 該周的結束
         dates = list(range(start, end+1)) # 取出該周的每一天
+        # 表格資料
+        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+        week_data = table_data[table_data['日期'].isin(dates)].copy()
+        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        dash.week = week_data.astype(float).round(2)
+
+        # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
         pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
             '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
@@ -314,11 +323,14 @@ def weekly(request):
         dash.fig_forweek = fig_html
 
         context = {
+            'data': dash.week.values.tolist(),
+            'columns': dash.week.columns,
             'placeholder_fig': dash.fig_forweek,
             'options': dash.weekly_options,
         }
 
         return render(request, 'page2_weekly.html',context)
+    
     # 預設跳轉至當周
     elif not dash.anyNone(dash.by_date): 
         # 設定選單內容
@@ -329,6 +341,15 @@ def weekly(request):
         start = int(nozero(select_week[8:10])) # 該周的開始
         end = int(nozero(select_week[-2:])) # 該周的結束
         dates = list(range(start, end+1)) # 取出該周的每一天
+        # 表格資料
+        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+        week_data = table_data[table_data['日期'].isin(dates)].copy()
+        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        dash.week = week_data.astype(float).round(2)
+
+        # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
         pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
             '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
@@ -351,6 +372,8 @@ def weekly(request):
         dash.fig_forweek = fig_html
 
         context = {
+            'data': dash.week.values.tolist(),
+            'columns': dash.week.columns,
             'placeholder_fig': dash.fig_forweek,
             'options': dash.weekly_options,
         }
@@ -358,10 +381,13 @@ def weekly(request):
         return render(request, 'page2_weekly.html',context)
     
     else: # 如果還沒上傳資料就點過來
+        placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
         placeholder_fig = dash.placeholder_figure()
         placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
         context = {
+            'data': placeholder_df.values.tolist(),
+            'columns': placeholder_df.columns,
             'placeholder_fig': placeholder_fig,
         }
         return render(request, 'page2_weekly.html',context)

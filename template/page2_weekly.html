@@ -54,6 +54,32 @@
         {% endautoescape %}
         {% endif %}
     </div>
+    <div class="container mt-4">
+        <div id="data_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
+            <h3 style="text-align:left">詳細資訊</h3>
+            <table id="datatable" name="datatable" class="table table-hover" style="margin-left: 0px;margin-right: auto;">
+                {% csrf_token %}
+                <thead>
+                    <tr>
+                        {% for col in columns %}
+                        <th scope="col">
+                            {{ col }}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr class="table-light">
+                        {% for cell in row %}
+                        <td>{{cell}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>           
+        </div>
+    </div>
     
 </body>
 <script>
