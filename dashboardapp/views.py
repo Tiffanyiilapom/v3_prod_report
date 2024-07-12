@@ -79,7 +79,7 @@ def get_all_workdays(year,month,df):
         formatted_dates.append(formatted_date)
     return formatted_dates
 
-# 找到指定年、月的最後一個工作天 (for跳轉預設)
+# 找到指定年、月的最後一個工作天 (for跳轉預設) 
 def get_last_working_day(year, month):
     # 先找當月的最後一天
     if month == 12:
@@ -115,22 +115,13 @@ def daily(request):
         year = now.year
         month = now.month
 
-        # 得到上一個工作日
-        today = datetime.now()
-        weekday_name = today.strftime('%A')
-        today = datetime.now().date()
-        if weekday_name == 'Monday':
-            last_workday = today - timedelta(days=3)
-        elif weekday_name == 'Sunday':
-            last_workday = today - timedelta(days=2)
-        else:
-            last_workday = today - timedelta(days=1)
-
         # 得到已發生的所有工作天
         options = get_all_workdays(year, month, data_bydate)
         dash.options = options
-            
-        last_two_digits = last_workday.strftime("%d")[-2:]
+        # 取出最後一個工作天
+        last_workday = options[-1]
+        # 有0的話去0
+        last_two_digits = last_workday[-2:]
         if last_two_digits.startswith('0'):
             last_two_digits = last_two_digits[1:]
 
@@ -178,14 +169,13 @@ def daily(request):
         data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='SMT_BY日期總表', skiprows=3, usecols='H:AI')
         dash.by_date = data_bydate
 
-        # 得到該年月的最後一個工作日
-        last_workday = get_last_working_day(year, month)
-
         # 得到已發生的所有工作天
         options = get_all_workdays(year, month, data_bydate)
         dash.options = options
-            
-        last_two_digits = last_workday.strftime("%d")[-2:]
+        # 取出最後一個工作天
+        last_workday = options[-1]
+        # 有0的話去0
+        last_two_digits = last_workday[-2:]
         if last_two_digits.startswith('0'):
             last_two_digits = last_two_digits[1:]
 
@@ -205,7 +195,7 @@ def daily(request):
             pie_data['待料時間/其它Idel(min)'] /= 60
         pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
         pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-        title = str(last_workday.strftime("%Y-%m-%d"))+' SMT Production Time Distribution'
+        title = str(last_workday) +' SMT Production Time Distribution'
 
         fig = px.pie(names=labels, values=pie_data.values, title=title)
         fig.update_layout(height=600, width=1000)
