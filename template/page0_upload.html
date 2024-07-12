@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
+    <title>{% block title %}SMT 生產報表{% endblock %}</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">SMT 生產報表</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active large-font" href="/upload/">資料上傳
+                            <span class="visually-hidden">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/daily/">每日</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/weekly/">每周</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/monthly/">每月</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <br><h3>當月SMT-生產日報表上傳區</h3><br>
+        <form method="POST" action="/daily/" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <input type="file" id="data" name="data" class="form-control" required><br>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="submit" value="Submit" class="btn btn-primary" name="data_upload_button">
+                    </div>
+                </div>
+            </div> 
+        </form>
+        <hr><br>
+        <h3>非當月SMT-生產日報表上傳區</h3><br>
+        <form method="POST" action="/daily/" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-8">
+                    <input type="file" id="data_old" name="data_old" class="form-control" required><br>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <select class="form-select" id="select_year" name="select_year" required>
+                            <option value="" disabled selected>請選擇上傳資料之年份</option>
+                            {% for year in years %}
+                                <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="form-select" id="select_month" name="select_month" required>
+                            <option value="" disabled selected>請選擇上傳資料之月份</option>
+                            {% for month in months %}
+                                <option value="{{ month }}">{{ month }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="submit" value="Submit" class="btn btn-primary" name="old_data_upload_button">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const yearSelect = document.getElementById("select_year");
+        const monthSelect = document.getElementById("select_month");
+        const currentYear = new Date().getFullYear()
+        const currentMonth = new Date().getMonth() + 1; // 因為從0開始
+
+        // 還沒選年不能選月
+        monthSelect.disabled = true;
+
+        yearSelect.addEventListener("change", function() {
+            const selectedYear = parseInt(yearSelect.value, 10);
+            
+            // Enable month select when year is selected
+            if (yearSelect.value) {
+                monthSelect.disabled = false;
+
+                // Disable future months if the selected year is the current year
+                for (let option of monthSelect.options) {
+                    if (option.value) {
+                        option.disabled = selectedYear === currentYear && parseInt(option.value, 10) > currentMonth;
+                    }
+                }
+            } else {
+                monthSelect.disabled = true;
+            }
+        });
+    });
+</script>
+</html>
