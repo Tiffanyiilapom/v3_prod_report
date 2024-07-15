@@ -44,6 +44,7 @@ def process_reason(text):
 # 把表格清乾淨
 def table_process(df):
     df = df.dropna(subset=['班別', '線別'], how='all')
+    df = df.dropna(subset=['線別','制令號'], how='all')
     df = df[(df['線別'] != '公式')]
     df = df.fillna(0)
     columns_to_remove = ['Remark'] + df.filter(regex=r'^Unnamed').columns.tolist()
@@ -201,14 +202,14 @@ def daily(request):
             pie_data['物料異常\n時間Hold(min)'] /= 60
             pie_data['借出工時RD(min)'] /= 60
             pie_data['待料時間/其它Idel(min)'] /= 60
-        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-        title = str(last_workday) +' SMT Production Time Distribution'
+            pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+            title = str(last_workday) +' SMT Production Time Distribution'
 
-        fig = px.pie(names=labels, values=pie_data.values, title=title)
-        fig.update_layout(height=600, width=1000)
-        fig_html = pio.to_html(fig, full_html=False)
-        dash.fig_fordaily = fig_html
+            fig = px.pie(names=labels, values=pie_data.values, title=title)
+            fig.update_layout(height=600, width=1000)
+            fig_html = pio.to_html(fig, full_html=False)
+            dash.fig_fordaily = fig_html
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
@@ -320,11 +321,14 @@ def weekly(request):
         pie_data['借出工時RD(min)'] /= 60
         pie_data['待料時間/其它Idel(min)'] /= 60
         pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
-        title = select_week +' SMT Production Time Distribution'
-        pie_data_sum = pie_data.sum()
+        if pie_data.ndim == 1: # 如果只有周一的資料
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+        else:
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
+            pie_data = pie_data.sum()
 
-        fig = px.pie(names=labels, values=pie_data_sum.values, title=title)
+        title = select_week +' SMT Production Time Distribution'
+        fig = px.pie(names=labels, values=pie_data.values, title=title)
         fig.update_layout(height=600, width=1000)
         fig_html = pio.to_html(fig, full_html=False)
         dash.fig_forweek = fig_html
@@ -369,11 +373,14 @@ def weekly(request):
         pie_data['借出工時RD(min)'] /= 60
         pie_data['待料時間/其它Idel(min)'] /= 60
         pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
-        title = select_week +' SMT Production Time Distribution'
-        pie_data_sum = pie_data.sum()
+        if pie_data.ndim == 1: # 如果只有周一的資料
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+        else:
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
+            pie_data = pie_data.sum()
 
-        fig = px.pie(names=labels, values=pie_data_sum.values, title=title)
+        title = select_week +' SMT Production Time Distribution'
+        fig = px.pie(names=labels, values=pie_data.values, title=title)
         fig.update_layout(height=600, width=1000)
         fig_html = pio.to_html(fig, full_html=False)
         dash.fig_forweek = fig_html
