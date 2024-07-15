@@ -34,7 +34,11 @@
         </div>
     </nav>
     <div class="container mt-4">
-    
+        {% if placeholder_fig %}
+        {% autoescape off %}
+        {{ placeholder_fig|safe }}
+        {% endautoescape %}
+        {% endif %}
     </div>
 </body>
 </html>

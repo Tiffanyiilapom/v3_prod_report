@@ -15,6 +15,8 @@ class My_Dash():
         self.week = None # 給每周的下方表格
         self.weekly_options = None # 保存周別選單
         self.fig_forweek = None # 保存每周的圓餅圖
+
+        self.fig_formonth = None # 保存每月的圓餅圖
         
     
     def anyNone(self, *args):

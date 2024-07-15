@@ -400,5 +400,60 @@ def weekly(request):
         return render(request, 'page2_weekly.html',context)
 
 def monthly(request):
-    return render(request, "page3_monthly.html")
+    if not dash.anyNone(dash.by_date): 
+        # 設定選單內容
+        dates = dash.options
+        year_month = dates[0][:7]
+        days = [date.split('-')[2] for date in dates]
+        processed_days = [int(nozero(day)) for day in days]
+        # 表格資料
+        #table_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
+        #table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+        #    '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+        #week_data = table_data[table_data['日期'].isin(dates)].copy()
+        #week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        #dash.week = process_date(week_data)
+
+        # 圓餅圖資料
+        pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
+        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
+        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
+
+        pie_data['调机工时Setup(min)'] /= 60
+        pie_data['機台維修時間\n  Down(min)'] /= 60
+        pie_data['製程異常\n時間Hold(min)'] /= 60
+        pie_data['物料異常\n時間Hold(min)'] /= 60
+        pie_data['借出工時RD(min)'] /= 60
+        pie_data['待料時間/其它Idel(min)'] /= 60
+        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
+        pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
+        title = year_month +' SMT Production Time Distribution'
+        pie_data_sum = pie_data.sum()
+
+        fig = px.pie(names=labels, values=pie_data_sum.values, title=title)
+        fig.update_layout(height=600, width=1000)
+        fig_html = pio.to_html(fig, full_html=False)
+        dash.fig_formonth = fig_html
+
+        context = {
+            #'data': dash.week.values.tolist(),
+            #'columns': dash.week.columns,
+            'placeholder_fig': dash.fig_formonth,
+            #'options': dash.weekly_options,
+        }
+        
+        return render(request, 'page3_monthly.html',context)
+    
+    else: # 如果還沒上傳資料就點過來
+        #placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
+        placeholder_fig = dash.placeholder_figure()
+        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+        context = {
+            #'data': placeholder_df.values.tolist(),
+            #'columns': placeholder_df.columns,
+            'placeholder_fig': placeholder_fig,
+        }
+        return render(request, 'page3_monthly.html',context)
 
