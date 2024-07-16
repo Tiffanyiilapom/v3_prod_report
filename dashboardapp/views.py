@@ -149,14 +149,14 @@ def daily(request):
             pie_data['物料異常\n時間Hold(min)'] /= 60
             pie_data['借出工時RD(min)'] /= 60
             pie_data['待料時間/其它Idel(min)'] /= 60
-        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-        title = str(last_workday)+' SMT Production Time Distribution'
+            pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+            title = str(last_workday)+' SMT Production Time Distribution'
 
-        fig = px.pie(names=labels, values=pie_data.values, title=title)
-        fig.update_layout(height=600, width=1000)
-        fig_html = pio.to_html(fig, full_html=False)
-        dash.fig_fordaily = fig_html
+            fig = px.pie(names=labels, values=pie_data.values, title=title)
+            fig.update_layout(height=600, width=1000)
+            fig_html = pio.to_html(fig, full_html=False)
+            dash.fig_fordaily = fig_html
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
@@ -243,14 +243,14 @@ def daily(request):
             pie_data['物料異常\n時間Hold(min)'] /= 60
             pie_data['借出工時RD(min)'] /= 60
             pie_data['待料時間/其它Idel(min)'] /= 60
-        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-        title = select_day +' SMT Production Time Distribution'
+            pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
+            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+            title = select_day +' SMT Production Time Distribution'
 
-        fig = px.pie(names=labels, values=pie_data.values, title=title)
-        fig.update_layout(height=600, width=1000)
-        fig_html = pio.to_html(fig, full_html=False)
-        dash.fig_fordaily = fig_html
+            fig = px.pie(names=labels, values=pie_data.values, title=title)
+            fig.update_layout(height=600, width=1000)
+            fig_html = pio.to_html(fig, full_html=False)
+            dash.fig_fordaily = fig_html
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
