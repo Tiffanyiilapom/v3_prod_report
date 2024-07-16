@@ -4,11 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/datatable.css' %}" type="text/css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/datatable.css' %}">
     <title>{% block title %}SMT 生產報表{% endblock %}</title>
 </head>
+<style>
+    .dataTable {
+        font-size: 16px; 
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        font-size: 16px; 
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        font-size: 16px; 
+    }
+</style>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
         <div class="container-fluid">
@@ -135,6 +150,15 @@
         </div>
     </div>
 </body>
+
+<script>
+    $(document).ready(function() {
+        $('#datatable').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50]});
+        $('#table_mass').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50] });
+        $('#table_trial').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50] });
+    });
+</script>
+
 <script>
     document.addEventListener("DOMContentLoaded",function() {
 
