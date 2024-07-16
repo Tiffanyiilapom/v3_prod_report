@@ -166,7 +166,7 @@
     });
 
     var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
-    var percentColumnIndexes = [columnCount - 19, columnCount - 17, columnCount - 8, columnCount - 7, columnCount - 1, columnCount]; 
+    var percentColumnIndexes = [columnCount - 17, columnCount - 8, columnCount - 7, columnCount - 1, columnCount]; 
 
     var reasonColumnIndex = columnCount - 6; 
     var reasonCells = document.querySelectorAll(`tbody td:nth-child(${reasonColumnIndex})`);
@@ -181,8 +181,9 @@
         const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
         percentCells.forEach(cell => {
             let value = parseFloat(cell.textContent);
-                cell.textContent = (value * 100).toFixed(1) + "%";
+            cell.textContent = (value * 100).toFixed(1) + "%";
         });
+
     });
 });
 </script>

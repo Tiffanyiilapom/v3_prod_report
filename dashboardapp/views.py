@@ -41,6 +41,16 @@ def process_reason(text):
             results.append(f"{key}:{match.group(1).strip()}")  # match.group(1)回傳捕獲的內容
     return ', '.join(results) if results else '無異常'
 
+def conditional_round(x):
+    if pd.isna(x):  
+        return x
+    if isinstance(x, (int, float)):  
+        if x < 1 or (x > 1 and x < 2 and x/10 != 0):
+            return round(x, 4)
+        else:
+            return round(x, 2)
+    return x
+
 # 把表格清乾淨
 def table_process(df):
     df = df.dropna(subset=['班別', '線別'], how='all')
@@ -48,7 +58,7 @@ def table_process(df):
     df = df[(df['線別'] != '公式')]
     df = df.fillna(0)
     df = df[df['實際產量(PCS）'] != 0 ]
-    columns_to_remove = ['Remark'] + df.filter(regex=r'^Unnamed').columns.tolist()
+    columns_to_remove = ['Remark'] + ['生產達成率%'] + df.filter(regex=r'^Unnamed').columns.tolist()
     df = df.drop(columns=columns_to_remove, errors='ignore')
     df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
     df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
@@ -56,7 +66,7 @@ def table_process(df):
     df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
     df = df.fillna(" ")
     df['未达成/異常原因'] = df['未达成/異常原因'].apply(process_reason)
-    df = df.round(2)
+    df = df.map(conditional_round)
     return df
 
 # 找所有的工作天 (for下拉選單)
