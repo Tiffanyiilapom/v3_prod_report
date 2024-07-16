@@ -47,6 +47,7 @@ def table_process(df):
     df = df.dropna(subset=['線別','制令號'], how='all')
     df = df[(df['線別'] != '公式')]
     df = df.fillna(0)
+    df = df[df['實際產量(PCS）'] != 0 ]
     columns_to_remove = ['Remark'] + df.filter(regex=r'^Unnamed').columns.tolist()
     df = df.drop(columns=columns_to_remove, errors='ignore')
     df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
@@ -161,11 +162,17 @@ def daily(request):
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
         dash.day = table_process(data_day)
+        dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
 
         context = {
-            'data': dash.day.values.tolist(),
-            'columns': dash.day.columns,
-            'placeholder_fig': fig_html,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
             'options': dash.options,
         }
 
@@ -214,11 +221,17 @@ def daily(request):
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
         dash.day = table_process(data_day)
+        dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
 
         context = {
-            'data': dash.day.values.tolist(),
-            'columns': dash.day.columns,
-            'placeholder_fig': fig_html,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
             'options': dash.options,
         }
 
@@ -255,11 +268,17 @@ def daily(request):
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
         dash.day = table_process(data_day)
+        dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
 
         context = {
-            'data': dash.day.values.tolist(),
-            'columns': dash.day.columns,
-            'placeholder_fig': fig_html,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
             'options': dash.options,
         }
 
@@ -269,8 +288,12 @@ def daily(request):
     elif not dash.anyNone(dash.day): 
         
         context = {
-            'data': dash.day.values.tolist(),
-            'columns': dash.day.columns,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
             'placeholder_fig': dash.fig_fordaily,
             'options': dash.options,
         }
@@ -284,10 +307,9 @@ def daily(request):
         placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
         context = {
-            'data': placeholder_df.values.tolist(),
-            'columns': placeholder_df.columns,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
             'placeholder_fig': placeholder_fig,
-            #'options': dash.options,
         }
         return render(request, 'page1_daily.html',context)
 
