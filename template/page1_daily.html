@@ -5,24 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css">
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{% static 'css/datatable.css' %}">
     <title>{% block title %}SMT 生產報表{% endblock %}</title>
 </head>
 <style>
     .dataTable {
-        font-size: 16px; 
+        font-size: 16 px;
     }
 
-    .dataTables_wrapper .dataTables_paginate .paginate_button {
-        font-size: 16px; 
+    .low-percent {
+        color: #fc0101 !important; 
+        font-weight: bold !important;
     }
 
-    .dataTables_wrapper .dataTables_filter input {
-        font-size: 16px; 
+    .highlight-row {
+        position: relative;
+        background-color: #eb7b5a54 !important;
     }
+
+    .dt-input {
+        margin-right: 10px; /* Space between label and select menu */
+    }
+
 </style>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
@@ -80,7 +87,7 @@
             <label class="btn btn-outline-primary" for="btnradio3" style="font-size: 1.1rem; padding: 0.7rem 1rem;">試產</label>
         </div><hr>
         <div id="data_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
-            <table id="datatable" name="datatable" class="table table-hover" style="margin-left: 0px;margin-right: auto;">
+            <table id="datatable" name="datatable" class="table table-hover" style="margin:1px;">
                 {% csrf_token %}
                 <thead>
                     <tr>
@@ -93,7 +100,7 @@
                 </thead>
                 <tbody>
                     {% for row in all_data %}
-                    <tr class="table-light">
+                    <tr>
                         {% for cell in row %}
                         <td>{{cell}}</td>
                         {% endfor %}
@@ -103,7 +110,7 @@
             </table>
         </div>
         <div id="mass_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
-            <table id="table_mass" name="table_mass" class="table table-hover" style="margin-left: 0px;margin-right: auto;">
+            <table id="table_mass" name="table_mass" class="table table-hover" style="margin:1px;">
                 {% csrf_token %}
                 <thead>
                     <tr>
@@ -116,7 +123,7 @@
                 </thead>
                 <tbody>
                     {% for row in mass_data %}
-                    <tr class="table-light">
+                    <tr>
                         {% for cell in row %}
                         <td>{{cell}}</td>
                         {% endfor %}
@@ -126,7 +133,7 @@
             </table>
         </div>
         <div id="trial_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
-            <table id="table_trial" name="table_trial" class="table table-hover" style="margin-left: 0px;margin-right: auto;">
+            <table id="table_trial" name="table_trial" class="table table-hover" style="margin:1px;">
                 {% csrf_token %}
                 <thead>
                     <tr>
@@ -139,7 +146,7 @@
                 </thead>
                 <tbody>
                     {% for row in trial_data %}
-                    <tr class="table-light">
+                    <tr>
                         {% for cell in row %}
                         <td>{{cell}}</td>
                         {% endfor %}
@@ -191,29 +198,35 @@
 </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded",function() {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
-    var percentColumnIndexes = [columnCount - 17, columnCount - 8, columnCount - 7, columnCount - 1, columnCount]; 
+        var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
+        var percentColumnIndexes = [columnCount - 17, columnCount - 8, columnCount - 7, columnCount - 1, columnCount]; 
 
-    var reasonColumnIndex = columnCount - 6; 
-    var reasonCells = document.querySelectorAll(`tbody td:nth-child(${reasonColumnIndex})`);
-    reasonCells.forEach(function(cell) {
-        var reasonText = cell.textContent.trim(); 
-        if (reasonText !== "無異常") {
-            cell.classList.add("problem");
-        }
-    });
-
-    percentColumnIndexes.forEach(index => {
-        const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
-        percentCells.forEach(cell => {
-            let value = parseFloat(cell.textContent);
-            cell.textContent = (value * 100).toFixed(1) + "%";
+        var reasonColumnIndex = columnCount - 6; 
+        var reasonCells = document.querySelectorAll(`tbody td:nth-child(${reasonColumnIndex})`);
+        reasonCells.forEach(function(cell) {
+            var reasonText = cell.textContent.trim(); 
+            if (reasonText !== "無異常") {
+                cell.classList.add("problem");
+            }
         });
 
+        percentColumnIndexes.forEach(index => {
+            const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            percentCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                let formattedValue = (value * 100).toFixed(2) + "%";
+                cell.textContent = formattedValue;
+
+                if (index === columnCount - 17 && value < 1) {
+                    cell.classList.add("low-percent");
+                    const row = cell.parentElement;
+                    row.classList.add("highlight-row");
+                }
+            });
+        });
     });
-});
 </script>
 
 </html>

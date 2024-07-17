@@ -110,7 +110,7 @@ def nozero(str):
 
 def process_date(data):
     dates = data['日期'].astype(str).str.replace(r'\.0$',"",regex=True)
-    numeric_data = data.drop('日期',axis=1).astype(float).round(2)
+    numeric_data = data.drop('日期',axis=1).astype(float).map(conditional_round)
     final_data = numeric_data.copy()
     final_data['日期'] = dates
     final_data = final_data[['日期'] + [col for col in numeric_data.columns]]
@@ -118,7 +118,7 @@ def process_date(data):
 
 def upload(request):
     current_year = int(datetime.now().year)
-    years = [current_year - i for i in range(3)]
+    years = [current_year - i for i in range(2)]
     months = list(range(1, 13))
     context = {
         'years': years, 

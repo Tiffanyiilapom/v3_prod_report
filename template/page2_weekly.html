@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
         percentCells.forEach(cell => {
         let value = parseFloat(cell.textContent);
-            cell.textContent = (value * 100).toFixed(1) + "%";
+            cell.textContent = (value * 100).toFixed(2) + "%";
         });
     });
 });
