@@ -59,7 +59,8 @@ def table_process(df):
     df = df.dropna(subset=['線別','制令號'], how='all')
     df = df[(df['線別'] != '公式')]
     df['制令號'] = df['制令號'].astype(str).str.replace(r"^[\'\"]+", "", regex=True)
-    df = df.fillna(0)
+    with pd.option_context("future.no_silent_downcasting", True):
+        df = df.fillna(0).infer_objects(copy=False)
     df = df[df['實際產量(PCS）'] != 0 ]
     columns_to_remove = ['Remark'] + ['生產達成率%'] + df.filter(regex=r'^Unnamed').columns.tolist()
     df = df.drop(columns=columns_to_remove, errors='ignore')
