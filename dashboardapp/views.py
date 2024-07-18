@@ -133,6 +133,7 @@ def daily(request):
     global dash
     # 預設呈現最新的工作天
     if request.method == "POST" and 'data_upload_button' in request.POST:
+        dash.flag = False
         data = request.FILES.get('data')
         dash.data = data.read()
         data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='SMT_BY日期總表', skiprows=3, usecols='H:AI')
@@ -193,6 +194,7 @@ def daily(request):
     
     # 若上傳非當月資料
     elif request.method == "POST" and 'old_data_upload_button' in request.POST:
+        dash.flag = False
         data = request.FILES.get('data_old')
         year = int(request.POST.get("select_year"))
         month = int(request.POST.get("select_month"))
@@ -320,8 +322,8 @@ def daily(request):
         placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
         context = {
-            'all_data': dash.day.values.tolist(),
-            'all_columns': dash.day.columns,
+            'all_data': placeholder_df.values.tolist(),
+            'all_columns': placeholder_df.columns,
             'placeholder_fig': placeholder_fig,
         }
         return render(request, 'page1_daily.html',context)
@@ -442,7 +444,7 @@ def weekly(request):
         return render(request, 'page2_weekly.html',context)
 
 def monthly(request):
-    if not dash.anyNone(dash.fig_formonth, dash.sixplot_html):
+    if not dash.anyNone(dash.by_date, dash.sixplot_html) and dash.flag:
 
         context = {
             'placeholder_fig': dash.fig_formonth,
@@ -450,7 +452,7 @@ def monthly(request):
         }
         
         return render(request, 'page3_monthly.html',context)
-
+    
     elif not dash.anyNone(dash.by_date): 
         # 設定選單內容
         dates = dash.options # 2024-07-18
@@ -529,13 +531,18 @@ def monthly(request):
             fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
 
             fig.update_xaxes(title_text='PostDate', row=row, col=col)
-            fig.update_yaxes(title_text='Std/Act', range=[0.3, 1.55], row=row, col=col)
+            lb = filtered_data['Std/Act'].min()
+            ub =filtered_data['Std/Act'].max()
+            lb = min(lb, 0.3)
+            ub = max(ub, 1.5)
+            fig.update_yaxes(title_text='Std/Act', range=[lb, ub+0.05], row=row, col=col)
             
             showlegend_bar = False
             showlegend_line = False
 
         fig.update_layout(height=300 * rows,width=400 * cols,title_text="Achievement Rates for Different Work Centers",title_x=0.5)
         dash.sixplot_html = pio.to_html(fig)
+        dash.flag = True
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]

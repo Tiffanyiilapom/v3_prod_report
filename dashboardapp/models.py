@@ -21,6 +21,7 @@ class My_Dash():
 
         self.fig_formonth = None # 保存每月的圓餅圖
         self.sixplot_html = None # 保存每月的六工作站點效率圖
+        self.flag = False # 用來判斷是不是有重新上傳其他月份
         
     
     def anyNone(self, *args):
