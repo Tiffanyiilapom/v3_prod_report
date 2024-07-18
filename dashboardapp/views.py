@@ -6,13 +6,15 @@ import base64
 import io
 import re
 import plotly.graph_objects as go
-import plotly.subplots as sp
 import matplotlib.pyplot as plt
 import plotly.io as pio
 import plotly.express as px
 import seaborn as sns
-import json
 from datetime import datetime, timedelta, date
+import requests
+import re
+from bs4 import BeautifulSoup
+from plotly.subplots import make_subplots
 
 # Create your views here.
 
@@ -440,19 +442,100 @@ def weekly(request):
         return render(request, 'page2_weekly.html',context)
 
 def monthly(request):
-    if not dash.anyNone(dash.by_date): 
+    if not dash.anyNone(dash.fig_formonth, dash.sixplot_html):
+
+        context = {
+            'placeholder_fig': dash.fig_formonth,
+            'six_plot': dash.sixplot_html,
+        }
+        
+        return render(request, 'page3_monthly.html',context)
+
+    elif not dash.anyNone(dash.by_date): 
         # 設定選單內容
-        dates = dash.options
-        year_month = dates[0][:7]
-        days = [date.split('-')[2] for date in dates]
-        processed_days = [int(nozero(day)) for day in days]
-        # 表格資料
-        #table_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
-        #table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-        #    '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
-        #week_data = table_data[table_data['日期'].isin(dates)].copy()
-        #week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
-        #dash.week = process_date(week_data)
+        dates = dash.options # 2024-07-18
+        year_month = dates[0][:7] # 2024-07
+        days = [date.split('-')[2] for date in dates] # 01.02.03.04...17.18
+        processed_days = [int(nozero(day)) for day in days] # 1.2.3.4...17.18
+        dates = pd.to_datetime(dates).strftime('%Y%m%d') #20240718
+        head = pd.to_datetime(year_month).strftime('%Y%m') # 202407
+
+        # 爬蟲
+        base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
+        site = '1010'
+        workcenter = 'SMT'
+        grouped_df = pd.DataFrame()
+
+        for day in range(processed_days[0], processed_days[-1]+1):
+            query_date = head+f'{day:02d}'
+            params = {
+                'site': site,
+                'querymonth': query_date,
+                'workcenter': workcenter
+            }
+
+            try:
+                url = requests.get(base_url, params=params)
+                if url.status_code == 200:
+                    soup = BeautifulSoup(url.text, 'html.parser')
+                    table = soup.find('table')
+                    if table:
+                        headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
+                        rows = []
+                        for row in table.find_all('tr'):
+                            cells = row.find_all('td')
+                            row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
+                            if row_data:  
+                                rows.append(row_data)
+                        df = pd.DataFrame(rows, columns=headers, index=None)
+                        df = df.iloc[:-1]
+                        df = df.iloc[:, :-1]
+                        df = df.drop('WorkOrderType', axis=1)
+                        df['PostDate'] = pd.to_datetime(df['PostDate'], format='%Y%m%d').dt.strftime('%Y-%m-%d')
+                        df['ActManHour'] = df['ActManHour'].astype(float)
+                        df['StdManHour'] = df['StdManHour'].astype(float)
+                        df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
+                        grouped_df = pd.concat([grouped_df, df], axis=0)
+            except requests.exceptions.RequestException as e:
+                continue
+
+        grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
+        work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
+        num_centers = len(work_centers)
+        rows = (num_centers // 3) + (num_centers % 3 > 0)
+        cols = min(num_centers, 3)
+
+        fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
+
+        showlegend_bar = True
+        showlegend_line = True
+
+        for index, wc in enumerate(work_centers):
+            filtered_data = grouped_df[grouped_df['WorkCenter'] == wc]
+        
+            row = index // cols + 1
+            col = index % cols + 1
+
+            shape = dict(
+                type="line",
+                x0=filtered_data['PostDate'].min(), y0=1, x1=filtered_data['PostDate'].max(), y1=1,
+                line=dict(color="red", width=3, dash="dashdot"),
+                xref=f'x{index+1}', yref=f'y{index+1}')
+            
+            fig.add_shape(shape, row=row, col=col)
+            
+            fig.add_trace(go.Bar(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],name='Std/Act',marker_color='rgba(65, 105, 225, 0.6)',showlegend=showlegend_bar), row=row, col=col)
+            
+            fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
+
+            fig.update_xaxes(title_text='PostDate', row=row, col=col)
+            fig.update_yaxes(title_text='Std/Act', range=[0.3, 1.55], row=row, col=col)
+            
+            showlegend_bar = False
+            showlegend_line = False
+
+        fig.update_layout(height=300 * rows,width=400 * cols,title_text="Achievement Rates for Different Work Centers",title_x=0.5)
+        dash.sixplot_html = pio.to_html(fig)
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
@@ -477,23 +560,19 @@ def monthly(request):
         dash.fig_formonth = fig_html
 
         context = {
-            #'data': dash.week.values.tolist(),
-            #'columns': dash.week.columns,
             'placeholder_fig': dash.fig_formonth,
-            #'options': dash.weekly_options,
+            'six_plot': dash.sixplot_html,
         }
         
         return render(request, 'page3_monthly.html',context)
     
     else: # 如果還沒上傳資料就點過來
-        #placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
         placeholder_fig = dash.placeholder_figure()
         placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
         context = {
-            #'data': placeholder_df.values.tolist(),
-            #'columns': placeholder_df.columns,
             'placeholder_fig': placeholder_fig,
+            'six_plot': placeholder_fig,
         }
         return render(request, 'page3_monthly.html',context)
 

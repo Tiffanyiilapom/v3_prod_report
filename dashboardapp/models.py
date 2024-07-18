@@ -20,6 +20,7 @@ class My_Dash():
         self.fig_forweek = None # 保存每周的圓餅圖
 
         self.fig_formonth = None # 保存每月的圓餅圖
+        self.sixplot_html = None # 保存每月的六工作站點效率圖
         
     
     def anyNone(self, *args):

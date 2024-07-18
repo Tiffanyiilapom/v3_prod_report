@@ -40,5 +40,15 @@
         {% endautoescape %}
         {% endif %}
     </div>
+    <div class="container mt-4" style="padding: 5%;">
+        <h4>當月各工作中心生產狀況</h3>
+        <div class="text-center">
+            {% if six_plot %}
+            {% autoescape off %}
+            {{ six_plot|safe }}
+            {% endautoescape %}
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
