@@ -139,7 +139,7 @@ def func_for_pie(pie_data, title):
         pie_data = pie_data.sum()
     
     fig = px.pie(names=labels, values=pie_data.values, title=title)
-    fig.update_layout(height=600, width=1000)
+    #fig.update_layout(height=600, width=1000)
     fig_html = pio.to_html(fig, full_html=False)
     return fig_html
 
@@ -473,7 +473,7 @@ def monthly(request):
                 showlegend_bar = False
                 showlegend_line = False
 
-            fig.update_layout(height=300 * rows,width=400 * cols,title_text="Achievement Rates for Different Work Centers",title_x=0.5)
+            fig.update_layout(height=300 * rows, width=350 * cols, title_text="Achievement Rates for Different Work Centers",title_x=0.5)
             dash.sixplot_html = pio.to_html(fig)
             dash.flag = True
 

@@ -27,7 +27,46 @@
     }
 
     .dt-input {
-        margin-right: 10px; /* Space between label and select menu */
+        margin-right: 10px; 
+    }
+
+    .fig-container {
+        height: auto;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+        .navbar-brand {
+            font-size: 1.2em;
+        }
+
+        .nav-link {
+            font-size: 1em;
+        }
+
+        .btn-outline-primary {
+            font-size: 1em;
+            padding: 0.5rem 0.8rem;
+        }
+
+        .form-select {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-group .btn {
+            margin-bottom: 0.5rem;
+        }
+
+        .table-container {
+            margin-bottom: 1rem;
+        }
     }
 </style>
 <body>
@@ -69,12 +108,14 @@
             </form>
         </div>
     </nav>
-    <div class="container mt-4">
-        {% if placeholder_fig %}
-        {% autoescape off %}
-        {{ placeholder_fig|safe }}
-        {% endautoescape %}
-        {% endif %}
+    <div class="container mt-4" style="padding-right: 3%;">
+        <div class="fig-container">
+            {% if placeholder_fig %}
+            {% autoescape off %}
+            {{ placeholder_fig|safe }}
+            {% endautoescape %}
+            {% endif %}
+        </div>
     </div>
     <div class="container mt-4">
         <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
