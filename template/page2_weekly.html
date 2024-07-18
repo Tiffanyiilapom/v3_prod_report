@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/datatable.css' %}" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css">
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
     <title>{% block title %}SMT 生產報表{% endblock %}</title>
 </head>
+<style>
+    .dataTable {
+        font-size: 16 px;
+    }
+</style>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
         <div class="container-fluid">
@@ -56,8 +64,8 @@
     </div>
     <div class="container mt-4">
         <div id="data_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
-            <h3 style="text-align:left">詳細資訊</h3>
-            <table id="weektable" name="weektable" class="table table-hover" style="margin-left: 0px;margin-right: auto;">
+            <h3 style="text-align:left">每日資訊</h3>
+            <table id="weektable" name="weektable" class="table table-hover" style="margin:1px;">
                 {% csrf_token %}
                 <thead>
                     <tr>
@@ -80,8 +88,12 @@
             </table>           
         </div>
     </div>
-    
 </body>
+<script>
+    $(document).ready(function() {
+        $('#weektable').DataTable({"paging": false, scrollX: true})
+    });
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     var columnCount = document.getElementById("weektable").getElementsByTagName("th").length;
@@ -94,7 +106,5 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
-
 </script>
-
 </html>
