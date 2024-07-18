@@ -119,6 +119,30 @@ def process_date(data):
     final_data = final_data[['日期'] + [col for col in numeric_data.columns]]
     return final_data
 
+# 圓餅圖function
+def func_for_pie(pie_data, title):
+    pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
+    labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
+    # 分鐘的換成小時
+    pie_data['调机工时Setup(min)'] /= 60
+    pie_data['機台維修時間\n  Down(min)'] /= 60
+    pie_data['製程異常\n時間Hold(min)'] /= 60
+    pie_data['物料異常\n時間Hold(min)'] /= 60
+    pie_data['借出工時RD(min)'] /= 60
+    pie_data['待料時間/其它Idel(min)'] /= 60
+    pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
+    if pie_data.ndim == 1: # 如果只有一天的資料 e.g. 每日/該月第一天
+        pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
+    else:
+        pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
+        pie_data = pie_data.sum()
+    
+    fig = px.pie(names=labels, values=pie_data.values, title=title)
+    fig.update_layout(height=600, width=1000)
+    fig_html = pio.to_html(fig, full_html=False)
+    return fig_html
+
 def upload(request):
     current_year = int(datetime.now().year)
     years = [current_year - i for i in range(2)]
@@ -153,26 +177,8 @@ def daily(request):
 
         # 取出要畫圓餅圖的資料及欄位
         pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
-        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
-        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
-        # 確認取出的資料只有一筆
-        if pie_data.ndim == 1:
-            # 分鐘的換成小時
-            pie_data['调机工时Setup(min)'] /= 60
-            pie_data['機台維修時間\n  Down(min)'] /= 60
-            pie_data['製程異常\n時間Hold(min)'] /= 60
-            pie_data['物料異常\n時間Hold(min)'] /= 60
-            pie_data['借出工時RD(min)'] /= 60
-            pie_data['待料時間/其它Idel(min)'] /= 60
-            pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-            title = str(last_workday)+' SMT Production Time Distribution'
-
-            fig = px.pie(names=labels, values=pie_data.values, title=title)
-            fig.update_layout(height=600, width=1000)
-            fig_html = pio.to_html(fig, full_html=False)
-            dash.fig_fordaily = fig_html
+        title = str(last_workday)+' SMT Production Time Distribution'
+        dash.fig_fordaily = func_for_pie(pie_data, title)
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
@@ -213,26 +219,8 @@ def daily(request):
 
         # 取出要畫圓餅圖的資料及欄位
         pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
-        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
-        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
-        # 確認取出的資料只有一筆
-        if pie_data.ndim == 1:
-            # 分鐘的換成小時
-            pie_data['调机工时Setup(min)'] /= 60
-            pie_data['機台維修時間\n  Down(min)'] /= 60
-            pie_data['製程異常\n時間Hold(min)'] /= 60
-            pie_data['物料異常\n時間Hold(min)'] /= 60
-            pie_data['借出工時RD(min)'] /= 60
-            pie_data['待料時間/其它Idel(min)'] /= 60
-            pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-            title = str(last_workday) +' SMT Production Time Distribution'
-
-            fig = px.pie(names=labels, values=pie_data.values, title=title)
-            fig.update_layout(height=600, width=1000)
-            fig_html = pio.to_html(fig, full_html=False)
-            dash.fig_fordaily = fig_html
+        title = str(last_workday) +' SMT Production Time Distribution'
+        dash.fig_fordaily = func_for_pie(pie_data, title)
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
@@ -260,26 +248,8 @@ def daily(request):
 
         # 取出要畫圓餅圖的資料及欄位
         pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
-        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
-        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
-        # 確認取出的資料只有一筆
-        if pie_data.ndim == 1:
-            # 分鐘的換成小時
-            pie_data['调机工时Setup(min)'] /= 60
-            pie_data['機台維修時間\n  Down(min)'] /= 60
-            pie_data['製程異常\n時間Hold(min)'] /= 60
-            pie_data['物料異常\n時間Hold(min)'] /= 60
-            pie_data['借出工時RD(min)'] /= 60
-            pie_data['待料時間/其它Idel(min)'] /= 60
-            pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-            title = select_day +' SMT Production Time Distribution'
-
-            fig = px.pie(names=labels, values=pie_data.values, title=title)
-            fig.update_layout(height=600, width=1000)
-            fig_html = pio.to_html(fig, full_html=False)
-            dash.fig_fordaily = fig_html
+        title = select_day +' SMT Production Time Distribution'
+        dash.fig_fordaily = func_for_pie(pie_data, title)
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
@@ -348,28 +318,8 @@ def weekly(request):
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
-        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
-        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
-
-        pie_data['调机工时Setup(min)'] /= 60
-        pie_data['機台維修時間\n  Down(min)'] /= 60
-        pie_data['製程異常\n時間Hold(min)'] /= 60
-        pie_data['物料異常\n時間Hold(min)'] /= 60
-        pie_data['借出工時RD(min)'] /= 60
-        pie_data['待料時間/其它Idel(min)'] /= 60
-        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        if pie_data.ndim == 1: # 如果只有周一的資料
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-        else:
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
-            pie_data = pie_data.sum()
-
         title = select_week +' SMT Production Time Distribution'
-        fig = px.pie(names=labels, values=pie_data.values, title=title)
-        fig.update_layout(height=600, width=1000)
-        fig_html = pio.to_html(fig, full_html=False)
-        dash.fig_forweek = fig_html
+        dash.fig_forweek = func_for_pie(pie_data, title)
 
         context = {
             'data': dash.week.values.tolist(),
@@ -400,28 +350,8 @@ def weekly(request):
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
-        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
-        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
-
-        pie_data['调机工时Setup(min)'] /= 60
-        pie_data['機台維修時間\n  Down(min)'] /= 60
-        pie_data['製程異常\n時間Hold(min)'] /= 60
-        pie_data['物料異常\n時間Hold(min)'] /= 60
-        pie_data['借出工時RD(min)'] /= 60
-        pie_data['待料時間/其它Idel(min)'] /= 60
-        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        if pie_data.ndim == 1: # 如果只有周一的資料
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)')
-        else:
-            pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
-            pie_data = pie_data.sum()
-
         title = select_week +' SMT Production Time Distribution'
-        fig = px.pie(names=labels, values=pie_data.values, title=title)
-        fig.update_layout(height=600, width=1000)
-        fig_html = pio.to_html(fig, full_html=False)
-        dash.fig_forweek = fig_html
+        dash.fig_forweek = func_for_pie(pie_data, title)
 
         context = {
             'data': dash.week.values.tolist(),
@@ -454,8 +384,7 @@ def monthly(request):
         
         return render(request, 'page3_monthly.html',context)
     
-    elif not dash.anyNone(dash.by_date): 
-        # 設定選單內容
+    elif not dash.anyNone(dash.by_date): # 初始畫面
         dates = dash.options # 2024-07-18
         year_month = dates[0][:7] # 2024-07
         days = [date.split('-')[2] for date in dates] # 01.02.03.04...17.18
@@ -502,10 +431,10 @@ def monthly(request):
             except requests.exceptions.RequestException as e:
                 continue
 
-        if grouped_df.empty:  # 報工平台尚無該月資料
+        if grouped_df.empty:  # 若報工平台尚無該月資料 e.g. 8/2時報工可能只到7/31
             placeholder_fig = dash.placeholder_figure()
             placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
-            
+
         else:
             grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
             work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
@@ -537,9 +466,9 @@ def monthly(request):
 
                 lb = filtered_data['Std/Act'].min()
                 ub =filtered_data['Std/Act'].max()
-                lb = min(lb, 0.3)
+                lb = min(lb, 0.35)
                 ub = max(ub, 1.5)
-                fig.update_yaxes(title_text='Std/Act', range=[lb, ub+0.05], row=row, col=col)
+                fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
                 
                 showlegend_bar = False
                 showlegend_line = False
@@ -551,25 +480,8 @@ def monthly(request):
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
-        pie_data = pie_data.loc[:, ['計畫投產工時\n(Hrs)','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)']].astype(float).squeeze()
-        labels = ['调机工时 Setup (Hrs)', '機台維修時間 Down (Hrs)', '製程異常時間 Hold (Hrs)', '物料異常時間 Hold (Hrs)', '借出工時 RD (Hrs)', '待料時間/其它 Idel (Hrs)','稼動時間 (Hrs)']
-
-        pie_data['调机工时Setup(min)'] /= 60
-        pie_data['機台維修時間\n  Down(min)'] /= 60
-        pie_data['製程異常\n時間Hold(min)'] /= 60
-        pie_data['物料異常\n時間Hold(min)'] /= 60
-        pie_data['借出工時RD(min)'] /= 60
-        pie_data['待料時間/其它Idel(min)'] /= 60
-        pie_data['稼動時間\n(Hrs)'] = pie_data['計畫投產工時\n(Hrs)']-pie_data['调机工时Setup(min)']-pie_data['機台維修時間\n  Down(min)']-pie_data['製程異常\n時間Hold(min)']-pie_data['物料異常\n時間Hold(min)']-pie_data['借出工時RD(min)']-pie_data['待料時間/其它Idel(min)']
-        pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
         title = year_month +' SMT Production Time Distribution'
-        pie_data_sum = pie_data.sum()
-
-        fig = px.pie(names=labels, values=pie_data_sum.values, title=title)
-        fig.update_layout(height=600, width=1000)
-        fig_html = pio.to_html(fig, full_html=False)
-        dash.fig_formonth = fig_html
+        dash.fig_formonth = func_for_pie(pie_data, title)
 
         context = {
             'placeholder_fig': dash.fig_formonth,
