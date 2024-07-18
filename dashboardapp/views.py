@@ -445,7 +445,7 @@ def weekly(request):
         return render(request, 'page2_weekly.html',context)
 
 def monthly(request):
-    if not dash.anyNone(dash.by_date, dash.sixplot_html) and dash.flag:
+    if not dash.anyNone(dash.by_date, dash.sixplot_html) and dash.flag:   # 點回來留住資料
 
         context = {
             'placeholder_fig': dash.fig_formonth,
@@ -502,48 +502,52 @@ def monthly(request):
             except requests.exceptions.RequestException as e:
                 continue
 
-        grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
-        work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
-        num_centers = len(work_centers)
-        rows = (num_centers // 3) + (num_centers % 3 > 0)
-        cols = min(num_centers, 3)
-
-        fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
-
-        showlegend_bar = True
-        showlegend_line = True
-
-        for index, wc in enumerate(work_centers):
-            filtered_data = grouped_df[grouped_df['WorkCenter'] == wc]
-        
-            row = index // cols + 1
-            col = index % cols + 1
-
-            shape = dict(
-                type="line",
-                x0=filtered_data['PostDate'].min(), y0=1, x1=filtered_data['PostDate'].max(), y1=1,
-                line=dict(color="red", width=3, dash="dashdot"),
-                xref=f'x{index+1}', yref=f'y{index+1}')
+        if grouped_df.empty:  # 報工平台尚無該月資料
+            placeholder_fig = dash.placeholder_figure()
+            placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
             
-            fig.add_shape(shape, row=row, col=col)
-            
-            fig.add_trace(go.Bar(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],name='Std/Act',marker_color='rgba(65, 105, 225, 0.6)',showlegend=showlegend_bar), row=row, col=col)
-            
-            fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
+        else:
+            grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
+            work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
+            num_centers = len(work_centers)
+            rows = (num_centers // 3) + (num_centers % 3 > 0)
+            cols = min(num_centers, 3)
 
-            fig.update_xaxes(title_text='PostDate', row=row, col=col)
-            lb = filtered_data['Std/Act'].min()
-            ub =filtered_data['Std/Act'].max()
-            lb = min(lb, 0.3)
-            ub = max(ub, 1.5)
-            fig.update_yaxes(title_text='Std/Act', range=[lb, ub+0.05], row=row, col=col)
-            
-            showlegend_bar = False
-            showlegend_line = False
+            fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
 
-        fig.update_layout(height=300 * rows,width=400 * cols,title_text="Achievement Rates for Different Work Centers",title_x=0.5)
-        dash.sixplot_html = pio.to_html(fig)
-        dash.flag = True
+            showlegend_bar = True
+            showlegend_line = True
+
+            for index, wc in enumerate(work_centers):
+                filtered_data = grouped_df[grouped_df['WorkCenter'] == wc]
+            
+                row = index // cols + 1
+                col = index % cols + 1
+
+                shape = dict(
+                    type="line",
+                    x0=filtered_data['PostDate'].min(), y0=1, x1=filtered_data['PostDate'].max(), y1=1,
+                    line=dict(color="red", width=3, dash="dashdot"),
+                    xref=f'x{index+1}', yref=f'y{index+1}')
+                
+                fig.add_shape(shape, row=row, col=col)
+                fig.add_trace(go.Bar(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],name='Std/Act',marker_color='rgba(65, 105, 225, 0.6)',showlegend=showlegend_bar), row=row, col=col)
+                fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
+                fig.update_xaxes(title_text='PostDate', row=row, col=col)
+
+                lb = filtered_data['Std/Act'].min()
+                ub =filtered_data['Std/Act'].max()
+                lb = min(lb, 0.3)
+                ub = max(ub, 1.5)
+                fig.update_yaxes(title_text='Std/Act', range=[lb, ub+0.05], row=row, col=col)
+                
+                showlegend_bar = False
+                showlegend_line = False
+
+            fig.update_layout(height=300 * rows,width=400 * cols,title_text="Achievement Rates for Different Work Centers",title_x=0.5)
+            dash.sixplot_html = pio.to_html(fig)
+            dash.flag = True
+
 
         # 圓餅圖資料
         pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
