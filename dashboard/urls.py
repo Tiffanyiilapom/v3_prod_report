@@ -16,14 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from SMT import views as dashboard_views 
+from SMT import views as SMT_views 
+from EOL import views as EOL_views 
 
 urlpatterns = [
     # SMT
-    path('', dashboard_views.upload, name="home"),  
-    path('error/', dashboard_views.for_error, name="error"),   
-    path('upload/', dashboard_views.upload, name='upload'),
-    path('daily/', dashboard_views.daily, name='daily'),
-    path('weekly/', dashboard_views.weekly, name='weekly'),
-    path('monthly/', dashboard_views.monthly, name='monthly'),
+    path('', SMT_views.upload, name="home"),  
+    path('error/', SMT_views.for_error, name="error"),   
+    path('upload/', SMT_views.upload, name='upload'),
+    path('daily/', SMT_views.daily, name='daily'),
+    path('weekly/', SMT_views.weekly, name='weekly'),
+    path('monthly/', SMT_views.monthly, name='monthly'),
+
+    #EOL
+    path('eol_upload/', EOL_views.upload, name='eol_upload'),
+    path('eol_daily/', EOL_views.daily, name='eol_daily'),
+    path('eol_weekly/', EOL_views.weekly, name='eol_weekly'),
+    path('eol_monthly/', EOL_views.monthly, name='eol_monthly'),
 ]

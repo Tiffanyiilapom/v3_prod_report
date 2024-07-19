@@ -17,32 +17,32 @@
             <div class="collapse navbar-collapse" id="navbarColor01">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/upload" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">SMT 生產報表</a>
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/eol_upload" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">EOL 生產報表</a>
                         <div class="dropdown-menu">
-                          <a class="dropdown-item" href="/eol_upload" style="font-size: 1.3em;">EOL 生產報表</a>
+                          <a class="dropdown-item" href="/upload" style="font-size: 1.3em;">SMT 生產報表</a>
                           <a class="dropdown-item" href="#" style="font-size: 1.3em;">ASSY 生產報表</a>
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active large-font" href="/upload/" style="font-size: 1.1em;">資料上傳
+                        <a class="nav-link active large-font" href="/eol_upload/" style="font-size: 1.1em;">資料上傳
                             <span class="visually-hidden">(current)</span></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link large-font" href="/daily/" style="font-size: 1.1em;">每日</a>
+                        <a class="nav-link large-font" href="/eol_daily/" style="font-size: 1.1em;">每日</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link large-font" href="/weekly/" style="font-size: 1.1em;">每周</a>
+                        <a class="nav-link large-font" href="/eol_weekly/" style="font-size: 1.1em;">每周</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link large-font" href="/monthly/" style="font-size: 1.1em;">每月</a>
+                        <a class="nav-link large-font" href="/eol_monthly/" style="font-size: 1.1em;">每月</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
     <div class="container mt-4">
-        <br><h3>當月SMT-生產日報表上傳區</h3><br>
-        <form method="POST" action="/daily/" enctype="multipart/form-data">
+        <br><h3>當月EOL-生產日報表上傳區</h3><br>
+        <form method="POST" action="/eol_daily/" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <div class="row">
@@ -56,8 +56,8 @@
             </div> 
         </form>
         <hr><br>
-        <h3>非當月SMT-生產日報表上傳區</h3><br>
-        <form method="POST" action="/daily/" enctype="multipart/form-data">
+        <h3>非當月EOL-生產日報表上傳區</h3><br>
+        <form method="POST" action="/eol_daily/" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <div class="row">
