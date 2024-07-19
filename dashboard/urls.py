@@ -16,10 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from dashboardapp import views as dashboard_views 
+from SMT import views as dashboard_views 
 
 urlpatterns = [
-    # dashboardapp
+    # SMT
     path('', dashboard_views.upload, name="home"),  
     path('error/', dashboard_views.for_error, name="error"),   
     path('upload/', dashboard_views.upload, name='upload'),
