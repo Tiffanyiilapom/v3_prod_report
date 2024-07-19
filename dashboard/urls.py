@@ -20,7 +20,8 @@ from dashboardapp import views as dashboard_views
 
 urlpatterns = [
     # dashboardapp
-    path('', dashboard_views.upload, name="home"),   
+    path('', dashboard_views.upload, name="home"),  
+    path('error/', dashboard_views.for_error, name="error"),   
     path('upload/', dashboard_views.upload, name='upload'),
     path('daily/', dashboard_views.daily, name='daily'),
     path('weekly/', dashboard_views.weekly, name='weekly'),

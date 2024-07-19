@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
+    <title>{% block title %}SMT 生產報表{% endblock %}</title>
+</head>
+<style>
+    .li-error {
+        font-size: 20px; 
+    }
+</style>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">SMT 生產報表</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/upload/" style="font-size: 1.1em;">資料上傳
+                            <!--<span class="visually-hidden">(current)</span>-->
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/daily/" style="font-size: 1.1em;">每日</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/weekly/" style="font-size: 1.1em;">每周</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link large-font" href="/monthly/" style="font-size: 1.1em;">每月</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav><br>
+    <div class="container mt-4">
+        <h3>發生錯誤! 以下為可能原因:</h3>
+        <ol>
+            <li class="li-error">上傳了錯誤的資料，或勾選了不相符的年份與月份</li>
+            <li class="li-error">共用區的excel檔案正在更新</li>
+            <li class="li-error">共用區的excel檔案格式有更動</li>
+            <li class="li-error">報工時數資料正在更新</li>
+       </ol>
+       <h4>您可以嘗試重新上傳資料或將共用區的excel檔案下載後再上傳</h4>
+       <h4>若仍無法正常運作，請聯絡維護人員</h4>
+    </div>
+</body>
+</html>
