@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from SMT import views as SMT_views 
 from EOL import views as EOL_views 
+from ASSY import views as ASSY_views
 
 urlpatterns = [
     # SMT
@@ -33,4 +34,11 @@ urlpatterns = [
     path('eol_daily/', EOL_views.daily, name='eol_daily'),
     path('eol_weekly/', EOL_views.weekly, name='eol_weekly'),
     path('eol_monthly/', EOL_views.monthly, name='eol_monthly'),
+
+    #ASSY
+    path('assy_upload/', ASSY_views.upload, name='assy_upload'),
+    path('assy_daily/', ASSY_views.daily, name='assy_daily'),
+    path('assy_weekly/', ASSY_views.weekly, name='assy_weekly'),
+    path('assy_monthly/', ASSY_views.monthly, name='assy_monthly'),
+
 ]

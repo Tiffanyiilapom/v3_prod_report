@@ -25,16 +25,17 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">SMT 生產報表</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
             <div class="collapse navbar-collapse" id="navbarColor01">
                 <ul class="navbar-nav me-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/upload" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">SMT 生產報表</a>
+                        <div class="dropdown-menu">
+                          <a class="dropdown-item" href="/eol_upload" style="font-size: 1.3em;">EOL 生產報表</a>
+                          <a class="dropdown-item" href="#" style="font-size: 1.3em;">ASSY 生產報表</a>
+                        </div>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link large-font" href="/upload/" style="font-size: 1.1em;">資料上傳
-                            <span class="visually-hidden">(current)</span>
-                        </a>
+                        <a class="nav-link large-font" href="/upload/" style="font-size: 1.1em;">資料上傳</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link large-font" href="/daily/" style="font-size: 1.1em;">每日</a>
@@ -43,7 +44,9 @@
                         <a class="nav-link large-font" href="/weekly/" style="font-size: 1.1em;">每周</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active large-font" href="/monthly/" style="font-size: 1.1em;">每月</a>
+                        <a class="nav-link active large-font" href="/monthly/" style="font-size: 1.1em;">每月
+                            <span class="visually-hidden">(current)</span>
+                        </a>
                     </li>
                 </ul>
             </div>
