@@ -34,24 +34,24 @@ def upload(request):
             'months': months, 
             'current_year': current_year,
         }
-        return render(request, "p0_ASSY.html", context)
+        return render(request, "ASSY_p0.html", context)
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
     
 def daily(request):
     try:
-        return render(request, "p1_ASSY.html")
+        return render(request, "ASSY_p1.html")
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
     
 def weekly(request):
     try:
-        return render(request, "p2_ASSY.html")
+        return render(request, "ASSY_p2.html")
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
     
 def monthly(request):
     try:
-        return render(request, "p3_ASSY.html")
+        return render(request, "ASSY_p3.html")
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")

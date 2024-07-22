@@ -152,7 +152,7 @@ def for_error(request):
         dash.day = None 
         dash.sixplot_html = None 
         dash.flag = False 
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
 
 def upload(request):
     try:
@@ -164,9 +164,9 @@ def upload(request):
             'months': months, 
             'current_year': current_year,
         }
-        return render(request, "page0_upload.html", context)
+        return render(request, "SMT_p0.html", context)
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
 
 def daily(request):
     try:
@@ -212,7 +212,7 @@ def daily(request):
                 'options': dash.options,
             }
 
-            return render(request, 'page1_daily.html',context)
+            return render(request, 'SMT_p1.html',context)
         
         # 若上傳非當月資料
         elif request.method == "POST" and 'old_data_upload_button' in request.POST:
@@ -254,7 +254,7 @@ def daily(request):
                 'options': dash.options,
             }
 
-            return render(request, 'page1_daily.html',context)
+            return render(request, 'SMT_p1.html',context)
         
         # 若選擇非預設的日期
         elif request.method == "POST" and 'select_button' in request.POST:
@@ -283,7 +283,7 @@ def daily(request):
                 'options': dash.options,
             }
 
-            return render(request, 'page1_daily.html',context)
+            return render(request, 'SMT_p1.html',context)
             
         # 從別頁點回來的話把資料留住
         elif not dash.anyNone(dash.day): 
@@ -299,7 +299,7 @@ def daily(request):
                 'options': dash.options,
             }
             
-            return render(request, 'page1_daily.html',context)
+            return render(request, 'SMT_p1.html',context)
         
         # 尚未上傳資料
         else:
@@ -312,10 +312,10 @@ def daily(request):
                 'all_columns': placeholder_df.columns,
                 'placeholder_fig': placeholder_fig,
             }
-            return render(request, 'page1_daily.html',context)
+            return render(request, 'SMT_p1.html',context)
     except:
         for_error(request)
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
 
 
 def weekly(request):
@@ -347,7 +347,7 @@ def weekly(request):
                 'options': dash.weekly_options,
             }
 
-            return render(request, 'page2_weekly.html',context)
+            return render(request, 'SMT_p2.html',context)
         
         # 預設跳轉至當周
         elif not dash.anyNone(dash.by_date) : 
@@ -379,7 +379,7 @@ def weekly(request):
                 'options': dash.weekly_options,
             }
             
-            return render(request, 'page2_weekly.html',context)
+            return render(request, 'SMT_p2.html',context)
         
         else: # 如果還沒上傳資料就點過來
             placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
@@ -391,10 +391,10 @@ def weekly(request):
                 'columns': placeholder_df.columns,
                 'placeholder_fig': placeholder_fig,
             }
-            return render(request, 'page2_weekly.html',context)
+            return render(request, 'SMT_p2.html',context)
     except:
         for_error(request)
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
 
 def monthly(request):
     try:
@@ -405,7 +405,7 @@ def monthly(request):
                 'six_plot': dash.sixplot_html,
             }
             
-            return render(request, 'page3_monthly.html',context)
+            return render(request, 'SMT_p3.html',context)
         
         elif not dash.anyNone(dash.by_date): # 初始畫面
             dates = dash.options # 2024-07-18
@@ -511,7 +511,7 @@ def monthly(request):
                 'six_plot': dash.sixplot_html,
             }
             
-            return render(request, 'page3_monthly.html',context)
+            return render(request, 'SMT_p3.html',context)
         
         else: # 如果還沒上傳資料就點過來
             placeholder_fig = dash.placeholder_figure()
@@ -521,8 +521,8 @@ def monthly(request):
                 'placeholder_fig': placeholder_fig,
                 'six_plot': placeholder_fig,
             }
-            return render(request, 'page3_monthly.html',context)
+            return render(request, 'SMT_p3.html',context)
     except:
         for_error(request)
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
 

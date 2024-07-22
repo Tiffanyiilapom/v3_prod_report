@@ -75,10 +75,10 @@
             <div class="collapse navbar-collapse" id="navbarColor01">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">SMT 生產報表</a>
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/upload" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">SMT 生產報表</a>
                         <div class="dropdown-menu">
-                          <a class="dropdown-item" href="#" style="font-size: 1.3em;">EOL 生產報表</a>
-                          <a class="dropdown-item" href="#" style="font-size: 1.3em;">ASSY 生產報表</a>
+                          <a class="dropdown-item" href="eol_upload" style="font-size: 1.3em;">EOL 生產報表</a>
+                          <a class="dropdown-item" href="/assy_upload" style="font-size: 1.3em;">ASSY 生產報表</a>
                         </div>
                     </li>
                     <li class="nav-item">
@@ -119,14 +119,20 @@
         </div>
     </div>
     <div class="container mt-4">
-        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked="checked">
-            <label class="btn btn-outline-primary" for="btnradio1" style="font-size: 1.1rem; padding: 0.7rem 1rem;">總表</label>
-            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-            <label class="btn btn-outline-primary" for="btnradio2" style="font-size: 1.1rem; padding: 0.7rem 1rem;">量產</label>
-            <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-            <label class="btn btn-outline-primary" for="btnradio3" style="font-size: 1.1rem; padding: 0.7rem 1rem;">試產</label>
-        </div><hr>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked="checked">
+                <label class="btn btn-outline-primary" for="btnradio1" style="font-size: 1.1rem; padding: 0.7rem 1rem;">總表</label>
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio2" style="font-size: 1.1rem; padding: 0.7rem 1rem;">量產</label>
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio3" style="font-size: 1.1rem; padding: 0.7rem 1rem;">試產</label>
+            </div>
+            <div style="text-align: right;">
+                <button id="download_button" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.7rem 1rem;">Download Excel</button>
+            </div>
+        </div>
+        <hr>
         <div id="data_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
             <table id="datatable" name="datatable" class="table table-hover" style="margin:1px;">
                 {% csrf_token %}
@@ -236,6 +242,59 @@
                 }
             }
         });
+    });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script>
+    document.getElementById("download_button").addEventListener("click", function () {
+        let selectedRadio = document.querySelector('input[name="btnradio"]:checked');
+        let tableId = '';
+        let sheetName = '';
+
+        if (selectedRadio.id === 'btnradio1') {
+            tableId = 'datatable';
+            sheetName = '總表';
+        } else if (selectedRadio.id === 'btnradio2') {
+            tableId = 'table_mass';
+            sheetName = '量產';
+        } else if (selectedRadio.id === 'btnradio3') {
+            tableId = 'table_trial';
+            sheetName = '試產';
+        } else {
+            alert('No table selected.');
+            return;
+        }
+
+        let table = document.getElementById(tableId);
+        let rows = table.getElementsByTagName("tr");
+
+        let headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+        let headerCells = headerRow.getElementsByTagName("th");
+
+        let data = [];
+        let headerContent = [];
+
+        for (let j = 0; j < headerCells.length; j++) {
+            headerContent.push(headerCells[j].innerText);
+        }
+        data.push(headerContent);
+
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let rowContent = [];
+            for (let j = 0; j < cells.length; j++) {
+                rowContent.push(cells[j].innerText);
+            }
+            data.push(rowContent);
+        }
+
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+        XLSX.writeFile(wb, "download.xlsx");
     });
 </script>
 

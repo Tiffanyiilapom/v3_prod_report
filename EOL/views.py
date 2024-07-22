@@ -34,24 +34,24 @@ def upload(request):
             'months': months, 
             'current_year': current_year,
         }
-        return render(request, "p0_EOL.html", context)
+        return render(request, "EOL_p0.html", context)
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
     
 def daily(request):
     try:
-        return render(request, "p1_EOL.html")
+        return render(request, "EOL_p1.html")
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
     
 def weekly(request):
     try:
-        return render(request, "p2_EOL.html")
+        return render(request, "EOL_p2.html")
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
     
 def monthly(request):
     try:
-        return render(request, "p3_EOL.html")
+        return render(request, "EOL_p3.html")
     except:
-        return render(request, "page_for_error.html")
+        return render(request, "ERROR_Page.html")
