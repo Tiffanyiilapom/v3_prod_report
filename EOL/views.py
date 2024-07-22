@@ -397,7 +397,128 @@ def weekly(request):
         return render(request, 'EOL_p2.html',context)
     
 def monthly(request):
-    try:
-        return render(request, "EOL_p3.html")
-    except:
-        return render(request, "ERROR_Page.html")
+    if not dash.anyNone(dash.by_date, dash.sixplot_html) and dash.flag:   # 點回來留住資料
+
+        context = {
+            'placeholder_fig': dash.fig_formonth,
+            'six_plot': dash.sixplot_html,
+        }
+        
+        return render(request, 'EOL_p3.html',context)
+    
+    elif not dash.anyNone(dash.by_date): # 初始畫面
+        dates = dash.options # 2024-07-18
+        year_month = dates[0][:7] # 2024-07
+        days = [date.split('-')[2] for date in dates] # 01.02.03.04...17.18
+        processed_days = [int(nozero(day)) for day in days] # 1.2.3.4...17.18
+        dates = pd.to_datetime(dates).strftime('%Y%m%d') #20240718
+        head = pd.to_datetime(year_month).strftime('%Y%m') # 202407
+
+        # 爬蟲
+        base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
+        site = '1010'
+        workcenter = 'EOL'
+        grouped_df = pd.DataFrame()
+
+        for day in range(processed_days[0], processed_days[-1]+1):
+            query_date = head+f'{day:02d}'
+            params = {
+                'site': site,
+                'querymonth': query_date,
+                'workcenter': workcenter
+            }
+
+            try:
+                url = requests.get(base_url, params=params)
+                if url.status_code == 200:
+                    soup = BeautifulSoup(url.text, 'html.parser')
+                    table = soup.find('table')
+                    if table:
+                        headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
+                        rows = []
+                        for row in table.find_all('tr'):
+                            cells = row.find_all('td')
+                            row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
+                            if row_data:  
+                                rows.append(row_data)
+                        df = pd.DataFrame(rows, columns=headers, index=None)
+                        df = df.iloc[:-1]
+                        df = df.iloc[:, :-1]
+                        df = df.drop('WorkOrderType', axis=1)
+                        df['PostDate'] = pd.to_datetime(df['PostDate'], format='%Y%m%d').dt.strftime('%Y-%m-%d')
+                        df['ActManHour'] = df['ActManHour'].astype(float)
+                        df['StdManHour'] = df['StdManHour'].astype(float)
+                        df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
+                        grouped_df = pd.concat([grouped_df, df], axis=0)
+            except requests.exceptions.RequestException as e:
+                continue
+
+        if grouped_df.empty:  # 若報工平台尚無該月資料 e.g. 8/2時報工可能只到7/31
+            placeholder_fig = dash.placeholder_figure()
+            placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+        else:
+            grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
+            work_centers = ['EOL-AQ','EOL-ATE','EOL-OE','EOL-OPT']
+            num_centers = len(work_centers)
+            rows = (num_centers // 2) + (num_centers % 2 > 0)
+            cols = min(num_centers, 2)
+
+            fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
+
+            showlegend_bar = True
+            showlegend_line = True
+
+            for index, wc in enumerate(work_centers):
+                filtered_data = grouped_df[grouped_df['WorkCenter'] == wc]
+            
+                row = index // cols + 1
+                col = index % cols + 1
+
+                shape = dict(
+                    type="line",
+                    x0=filtered_data['PostDate'].min(), y0=1, x1=filtered_data['PostDate'].max(), y1=1,
+                    line=dict(color="red", width=3, dash="dashdot"),
+                    xref=f'x{index+1}', yref=f'y{index+1}')
+                
+                fig.add_shape(shape, row=row, col=col)
+                fig.add_trace(go.Bar(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],name='Std/Act',marker_color='rgba(65, 105, 225, 0.6)',showlegend=showlegend_bar), row=row, col=col)
+                fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
+                fig.update_xaxes(title_text='PostDate', row=row, col=col)
+
+                lb = filtered_data['Std/Act'].min()
+                ub =filtered_data['Std/Act'].max()
+                lb = min(lb, 0.35)
+                ub = max(ub, 1.5)
+                fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
+                
+                showlegend_bar = False
+                showlegend_line = False
+
+            fig.update_layout(height=300 * rows, width=350 * cols, title_text="Achievement Rates for Different Work Centers",title_x=0.5)
+            dash.sixplot_html = pio.to_html(fig)
+            dash.flag = True
+
+
+        # 圓餅圖資料
+        pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
+        title = year_month +' EOL Production Time Distribution'
+        dash.fig_formonth = func_for_pie(pie_data, title)
+
+        context = {
+            'placeholder_fig': dash.fig_formonth,
+            'six_plot': dash.sixplot_html,
+        }
+        
+        return render(request, 'EOL_p3.html',context)
+    
+    else: # 如果還沒上傳資料就點過來
+        placeholder_fig = dash.placeholder_figure()
+        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+        context = {
+            'placeholder_fig': placeholder_fig,
+            'six_plot': placeholder_fig,
+        }
+        return render(request, 'EOL_p3.html',context)
+   

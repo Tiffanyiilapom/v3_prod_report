@@ -3,30 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/zephyr/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
     <title>{% block title %}EOI 生產報表{% endblock %}</title>
 </head>
-<style>
-    .fig-container {
-        height: auto;
-        width: 100%;
-        overflow: hidden;
-    }
-
-    @media (max-width: 768px) {
-        .navbar-brand {
-            font-size: 1.2em;
-        }
-        .nav-link {
-            font-size: 1em;
-        }
-    }
-</style>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
         <div class="container-fluid">
-            <div class="collapse navbar-collapse" id="navbarColor01">
-                <ul class="navbar-nav me-auto">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/upload" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">SMT 生產報表</a>
                         <div class="dropdown-menu">
@@ -63,7 +52,7 @@
     </div>
     <div class="container mt-4" style="padding: 3.5%;">
         <h4>當月各工作中心生產狀況</h3>
-        <div class="text-center">
+        <div class="text-center" style="display: flex; justify-content: center; align-items: center;">
             {% if six_plot %}
             {% autoescape off %}
             {{ six_plot|safe }}
@@ -72,4 +61,7 @@
         </div>
     </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </html>
