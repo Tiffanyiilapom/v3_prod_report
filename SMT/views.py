@@ -146,13 +146,13 @@ def func_for_pie(pie_data, title):
     return fig_html
 
 def for_error(request):
-        # 把舊的東西清掉!
-        dash.data = None 
-        dash.by_date = None 
-        dash.day = None 
-        dash.sixplot_html = None 
-        dash.flag = False 
-        return render(request, "ERROR_Page.html")
+    # 把舊的東西清掉!
+    dash.data = None 
+    dash.by_date = None 
+    dash.day = None 
+    dash.sixplot_html = None 
+    dash.flag = False 
+    return render(request, "ERROR_Page.html")
 
 def upload(request):
     try:
