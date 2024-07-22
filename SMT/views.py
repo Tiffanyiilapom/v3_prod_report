@@ -140,8 +140,13 @@ def func_for_pie(pie_data, title):
         pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
         pie_data = pie_data.sum()
     
-    fig = px.pie(names=labels, values=pie_data.values, title=title)
-    #fig.update_layout(height=600, width=1000)
+    fig = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=pie_data.values,
+        rotation=300  # Rotates the pie chart slices
+    )])
+
+    fig.update_layout(title=title)
     fig_html = pio.to_html(fig, full_html=False)
     return fig_html
 

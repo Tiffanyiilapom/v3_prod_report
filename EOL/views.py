@@ -138,19 +138,24 @@ def func_for_pie(pie_data, title):
     else:
         pie_data = pie_data.drop('計畫投產工時\n(Hrs)', axis=1)
         pie_data = pie_data.sum()
-    
-    fig = px.pie(names=labels, values=pie_data.values, title=title)
-    #fig.update_layout(height=600, width=1000)
+
+    fig = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=pie_data.values,
+        rotation=300  # Rotates the pie chart slices
+    )])
+
+    fig.update_layout(title=title)
     fig_html = pio.to_html(fig, full_html=False)
     return fig_html
 
 def for_error(request):
     # 把舊的東西清掉!
-    dash.EOL_data = None 
-    dash.EOL_by_date = None 
-    dash.EOL_day = None 
-    dash.EOL_sixplot_html = None 
-    dash.EOL_flag = False 
+    dash.data = None 
+    dash.by_date = None 
+    dash.day = None 
+    dash.sixplot_html = None 
+    dash.flag = False 
     return render(request, "ERROR_Page.html")
     
 
@@ -171,87 +176,86 @@ def daily(request):
     global dash
     # 預設呈現最新的工作天
     if request.method == "POST" and 'data_upload_button' in request.POST:
-        dash.EOL_flag = False # 代表有新上傳資料
+        dash.flag = False # 代表有新上傳資料
         data = request.FILES.get('data')
-        dash.EOL_data = data.read()
-        data_bydate = pd.read_excel(io.BytesIO(dash.EOL_data), sheet_name='EOL BY日期總表', skiprows=3, usecols='H:AI')
-        dash.EOL_by_date = data_bydate
+        dash.data = data.read()
+        data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='EOL BY日期總表', skiprows=3, usecols='H:AI')
+        dash.by_date = data_bydate
         now = datetime.now()
         year = now.year
         month = now.month
 
         # 得到已發生的所有工作天
         options = get_all_workdays(year, month, data_bydate)
-        dash.EOL_options = options
+        dash.options = options
         # 取出最後一個工作天
         last_workday = options[-1]
         # 有0的話去0
         last_two_digits = nozero(last_workday[-2:])
 
         # 取出要畫圓餅圖的資料及欄位
-        pie_data = dash.EOL_by_date[dash.EOL_by_date['日期'] == int(last_two_digits)]
+        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
         title = str(last_workday)+' EOL Production Time Distribution'
-        dash.EOL_fig_fordaily = func_for_pie(pie_data, title)
+        dash.fig_fordaily = func_for_pie(pie_data, title)
 
         # 下方表格
-        data_day = pd.read_excel(io.BytesIO(dash.EOL_data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        dash.EOL_day = table_process(data_day)
-        dash.EOL_mass_production = dash.EOL_day[dash.EOL_day['製令編號'].str.startswith('1', na=False)]
-        dash.EOL_trial_production = dash.EOL_day[dash.EOL_day['製令編號'].str.startswith('3', na=False)]
+        data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
+        dash.day = table_process(data_day)
+        dash.mass_production = dash.day[dash.day['製令編號'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['製令編號'].str.startswith('3', na=False)]
 
         context = {
-            'all_data': dash.EOL_day.values.tolist(),
-            'all_columns': dash.EOL_day.columns,
-            'mass_data': dash.EOL_mass_production.values.tolist(),
-            'mass_columns': dash.EOL_mass_production.columns,
-            'trial_data': dash.EOL_trial_production.values.tolist(),
-            'trial_columns': dash.EOL_trial_production.columns,
-            'placeholder_fig': dash.EOL_fig_fordaily,
-            'options': dash.EOL_options,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
+            'options': dash.options,
         }
 
         return render(request, 'EOL_p1.html',context)
     
     # 若上傳非當月資料
     elif request.method == "POST" and 'old_data_upload' in request.POST:
-        dash.EOL_flag = False
+        dash.flag = False
         data = request.FILES.get('old_data')
         year = int(request.POST.get("select_old_year"))
         month = int(request.POST.get("select_old_month"))
-        dash.EOL_data = data.read()
-        data_bydate = pd.read_excel(io.BytesIO(dash.EOL_data), sheet_name='EOL BY日期總表', skiprows=3, usecols='H:AI')
+        dash.data = data.read()
+        data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='EOL BY日期總表', skiprows=3, usecols='H:AI')
 
-        dash.EOL_by_date = data_bydate
+        dash.by_date = data_bydate
 
         # 得到已發生的所有工作天
         options = get_all_workdays(year, month, data_bydate)
-        dash.EOL_options = options
+        dash.options = options
         # 取出最後一個工作天
         last_workday = options[-1]
         # 有0的話去0
         last_two_digits = nozero(last_workday[-2:])
 
         # 取出要畫圓餅圖的資料及欄位
-        pie_data = dash.EOL_by_date[dash.EOL_by_date['日期'] == int(last_two_digits)]
+        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
         title = str(last_workday) +' EOL Production Time Distribution'
-        dash.EOL_fig_fordaily = func_for_pie(pie_data, title)
+        dash.fig_fordaily = func_for_pie(pie_data, title)
 
         # 下方表格
-        data_day = pd.read_excel(io.BytesIO(dash.EOL_data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        print(data_day.head(15))
-        dash.EOL_day = table_process(data_day)
-        dash.EOL_mass_production = dash.EOL_day[dash.EOL_day['製令編號'].str.startswith('1', na=False)]
-        dash.EOL_trial_production = dash.EOL_day[dash.EOL_day['製令編號'].str.startswith('3', na=False)]
+        data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
+        dash.day = table_process(data_day)
+        dash.mass_production = dash.day[dash.day['製令編號'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['製令編號'].str.startswith('3', na=False)]
 
         context = {
-            'all_data': dash.EOL_day.values.tolist(),
-            'all_columns': dash.EOL_day.columns,
-            'mass_data': dash.EOL_mass_production.values.tolist(),
-            'mass_columns': dash.EOL_mass_production.columns,
-            'trial_data': dash.EOL_trial_production.values.tolist(),
-            'trial_columns': dash.EOL_trial_production.columns,
-            'placeholder_fig': dash.EOL_fig_fordaily,
-            'options': dash.EOL_options,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
+            'options': dash.options,
         }
 
         return render(request, 'EOL_p1.html',context)
@@ -262,42 +266,42 @@ def daily(request):
         last_two_digits = nozero(select_day[-2:])
 
         # 取出要畫圓餅圖的資料及欄位
-        pie_data = dash.EOL_by_date[dash.EOL_by_date['日期'] == int(last_two_digits)]
+        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
         title = select_day +' EOL Production Time Distribution'
-        dash.EOL_fig_fordaily = func_for_pie(pie_data, title)
+        dash.fig_fordaily = func_for_pie(pie_data, title)
 
         # 下方表格
-        data_day = pd.read_excel(io.BytesIO(dash.EOL_data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
+        data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
         print(data_day.head(15))
-        dash.EOL_day = table_process(data_day)
-        dash.EOL_mass_production = dash.EOL_day[dash.EOL_day['製令編號'].str.startswith('1', na=False)]
-        dash.EOL_trial_production = dash.EOL_day[dash.EOL_day['製令編號'].str.startswith('3', na=False)]
+        dash.day = table_process(data_day)
+        dash.mass_production = dash.day[dash.day['製令編號'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['製令編號'].str.startswith('3', na=False)]
 
         context = {
-            'all_data': dash.EOL_day.values.tolist(),
-            'all_columns': dash.EOL_day.columns,
-            'mass_data': dash.EOL_mass_production.values.tolist(),
-            'mass_columns': dash.EOL_mass_production.columns,
-            'trial_data': dash.EOL_trial_production.values.tolist(),
-            'trial_columns': dash.EOL_trial_production.columns,
-            'placeholder_fig': dash.EOL_fig_fordaily,
-            'options': dash.EOL_options,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
+            'options': dash.options,
         }
 
         return render(request, 'EOL_p1.html',context)
         
     # 從別頁點回來的話把資料留住
-    elif not dash.anyNone(dash.EOL_day): 
+    elif not dash.anyNone(dash.day): 
         
         context = {
-            'all_data': dash.EOL_day.values.tolist(),
-            'all_columns': dash.EOL_day.columns,
-            'mass_data': dash.EOL_mass_production.values.tolist(),
-            'mass_columns': dash.EOL_mass_production.columns,
-            'trial_data': dash.EOL_trial_production.values.tolist(),
-            'trial_columns': dash.EOL_trial_production.columns,
-            'placeholder_fig': dash.EOL_fig_fordaily,
-            'options': dash.EOL_options,
+            'all_data': dash.day.values.tolist(),
+            'all_columns': dash.day.columns,
+            'mass_data': dash.mass_production.values.tolist(),
+            'mass_columns': dash.mass_production.columns,
+            'trial_data': dash.trial_production.values.tolist(),
+            'trial_columns': dash.trial_production.columns,
+            'placeholder_fig': dash.fig_fordaily,
+            'options': dash.options,
         }
         
         return render(request, 'EOL_p1.html',context)
@@ -315,19 +319,80 @@ def daily(request):
         }
         return render(request, 'EOL_p1.html',context)
     
-    
-
-
-
-
-
-
 
 def weekly(request):
-    try:
-        return render(request, "EOL_p2.html")
-    except:
-        return render(request, "ERROR_Page.html")
+    global dash
+    # 選擇別週
+    if request.method == "POST" and 'select_week' in request.POST and not dash.anyNone(dash.by_date):
+        select_week = request.POST.get("eol_select2")
+        start = int(nozero(select_week[8:10])) # 該周的開始
+        end = int(nozero(select_week[-2:])) # 該周的結束
+        dates = list(range(start, end+1)) # 取出該周的每一天
+        # 表格資料
+        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能\n效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間Idel（min）','未開線\nOff(min）','檢驗報廢數', '待判&不良品數','報廢數', '不良率', '直通率\n%']]
+        week_data = table_data[table_data['日期'].isin(dates)].copy()
+        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        dash.week = process_date(week_data)
+
+        # 圓餅圖資料
+        pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        title = select_week +' EOL Production Time Distribution'
+        dash.fig_forweek = func_for_pie(pie_data, title)
+
+        context = {
+            'data': dash.week.values.tolist(),
+            'columns': dash.week.columns,
+            'placeholder_fig': dash.fig_forweek,
+            'options': dash.weekly_options,
+        }
+
+        return render(request, 'EOL_p2.html',context)
+    
+    # 預設跳轉至當周
+    elif not dash.anyNone(dash.by_date) : 
+        # 設定選單內容
+        dates = dash.options
+        options = find_date_ranges(dates)
+        dash.weekly_options = options
+        select_week = options[-1] # 取出最新周次
+        start = int(nozero(select_week[8:10])) # 該周的開始
+        end = int(nozero(select_week[-2:])) # 該周的結束
+        dates = list(range(start, end+1)) # 取出該周的每一天
+        # 表格資料
+        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能\n效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間Idel（min）','未開線\nOff(min）','檢驗報廢數', '待判&不良品數','報廢數', '不良率', '直通率\n%']]
+        week_data = table_data[table_data['日期'].isin(dates)].copy()
+        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        dash.week = process_date(week_data)
+
+        # 圓餅圖資料
+        pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        title = select_week +' EOL Production Time Distribution'
+        dash.fig_forweek = func_for_pie(pie_data, title)
+
+        context = {
+            'data': dash.week.values.tolist(),
+            'columns': dash.week.columns,
+            'placeholder_fig': dash.fig_forweek,
+            'options': dash.weekly_options,
+        }
+        
+        return render(request, 'EOL_p2.html',context)
+    
+    else: # 如果還沒上傳資料就點過來
+        placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
+        placeholder_fig = dash.placeholder_figure()
+        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+        context = {
+            'data': placeholder_df.values.tolist(),
+            'columns': placeholder_df.columns,
+            'placeholder_fig': placeholder_fig,
+        }
+        return render(request, 'EOL_p2.html',context)
     
 def monthly(request):
     try:
