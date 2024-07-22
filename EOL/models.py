@@ -7,7 +7,7 @@ import io
 class My_Dash():
     def __init__(self):
         self.data = None # 整個活頁簿
-        self.by_date = None # (sheet:SMT_BY日期總表) 給圓餅圖用
+        self.by_date = None # (sheet:EOL BY日期總表) 給圓餅圖用
 
         self.day = None # 給每日的下方表格 總表
         self.mass_production = None # 量產

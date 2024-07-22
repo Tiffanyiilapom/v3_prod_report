@@ -334,6 +334,7 @@ def weekly(request):
             '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間Idel（min）','未開線\nOff(min）','檢驗報廢數', '待判&不良品數','報廢數', '不良率', '直通率\n%']]
         week_data = table_data[table_data['日期'].isin(dates)].copy()
         week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        week_data ['產能\n效率*'] = week_data ['實際產量\n(PCS）'].astype(float)/week_data ['目標產量     （PCS）'].astype(float)
         dash.week = process_date(week_data)
 
         # 圓餅圖資料
@@ -366,6 +367,7 @@ def weekly(request):
             '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間Idel（min）','未開線\nOff(min）','檢驗報廢數', '待判&不良品數','報廢數', '不良率', '直通率\n%']]
         week_data = table_data[table_data['日期'].isin(dates)].copy()
         week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+        week_data ['產能\n效率*'] = week_data ['實際產量\n(PCS）'].astype(float)/week_data ['目標產量     （PCS）'].astype(float)
         dash.week = process_date(week_data)
 
         # 圓餅圖資料
