@@ -495,7 +495,7 @@ def monthly(request):
 
                 lb = filtered_data['Std/Act'].min()
                 ub =filtered_data['Std/Act'].max()
-                lb = min(lb, 0.35)
+                lb = min(lb, 0.5)
                 ub = max(ub, 1.5)
                 fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
                 

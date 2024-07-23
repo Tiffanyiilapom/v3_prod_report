@@ -40,7 +40,7 @@ def conditional_round(x):
 def table_process(df):
     df.drop(index=0, inplace=True)
     df = df.dropna(subset=['班別', '線別'], how='all')
-    df = df[~((df['班別'] == '班別') & (df['線別'] == '線別'))]
+    df = df[~((df['班別'] == '班別') & (df['線別'] == '線別'))] # 移除excel表中可能不小心被多複製一次的欄位名稱
     df['制令號'] = df['制令號'].astype(int).astype(str)
     df.loc[:,'制令號'] = df['制令號'].str.replace(r"^[\'\"]", "", regex=True)
     with pd.option_context("future.no_silent_downcasting", True):
@@ -257,7 +257,6 @@ def daily(request):
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=3, usecols='A:AN', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        print(data_day.head(15))
         dash.day = table_process(data_day)
         dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
         dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
@@ -481,7 +480,7 @@ def monthly(request):
 
                 lb = filtered_data['Std/Act'].min()
                 ub =filtered_data['Std/Act'].max()
-                lb = min(lb, 0.35)
+                lb = min(lb, 0.5)
                 ub = max(ub, 1.5)
                 fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
                 

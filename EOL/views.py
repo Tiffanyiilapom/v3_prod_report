@@ -273,7 +273,6 @@ def daily(request):
 
         # 下方表格
         data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=3, usecols='A:AE', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        print(data_day.head(15))
         dash.day = table_process(data_day)
         dash.mass_production = dash.day[dash.day['製令編號'].str.startswith('1', na=False)]
         dash.trial_production = dash.day[dash.day['製令編號'].str.startswith('3', na=False)]
@@ -465,7 +464,7 @@ def monthly(request):
             rows = (num_centers // 2) + (num_centers % 2 > 0)
             cols = min(num_centers, 2)
 
-            fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
+            fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers], horizontal_spacing=0.15)
 
             showlegend_bar = True
             showlegend_line = True
@@ -489,7 +488,7 @@ def monthly(request):
 
                 lb = filtered_data['Std/Act'].min()
                 ub =filtered_data['Std/Act'].max()
-                lb = min(lb, 0.35)
+                lb = min(lb, 0.5)
                 ub = max(ub, 1.5)
                 fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
                 
