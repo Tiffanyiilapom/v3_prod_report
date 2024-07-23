@@ -14,13 +14,16 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="padding: 0.5rem 1rem; height: 70px;">
         <div class="container-fluid">
-            <div class="collapse navbar-collapse" id="navbarColor01">
-                <ul class="navbar-nav me-auto">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/assy_upload" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">ASSY 生產報表</a>
                         <div class="dropdown-menu">
-                          <a class="dropdown-item" href="/upload" style="font-size: 1.3em;">SMT 生產報表</a>
-                          <a class="dropdown-item" href="/eol_upload" style="font-size: 1.3em;">EOL 生產報表</a>
+                            <a class="dropdown-item" href="/upload" style="font-size: 1.3em;">SMT 生產報表</a>
+                            <a class="dropdown-item" href="/eol_upload" style="font-size: 1.3em;">EOL 生產報表</a>
                         </div>
                     </li>
                     <li class="nav-item">
@@ -42,7 +45,7 @@
     </nav>
     <div class="container mt-4">
         <br><h3>當月ASSY-生產日報表上傳區</h3><br>
-        <form method="POST" action="/eol_daily/" enctype="multipart/form-data">
+        <form method="POST" action="/assy_daily/" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <div class="row">
@@ -50,24 +53,24 @@
                         <input type="file" id="data" name="data" class="form-control" required><br>
                     </div>
                     <div class="col-sm-4">
-                        <input type="submit" value="Submit" class="btn btn-primary" name="data_upload_button">
+                        <input type="submit" value="Submit" class="btn btn-primary" name="data_upload_assy">
                     </div>
                 </div>
             </div> 
         </form>
         <hr><br>
         <h3>非當月ASSY-生產日報表上傳區</h3><br>
-        <form method="POST" action="/eol_daily/" enctype="multipart/form-data">
+        <form method="POST" action="/assy_daily/" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
                 <div class="row">
                     <div class="col-sm-8">
-                    <input type="file" id="data_old" name="data_old" class="form-control" required><br>
+                    <input type="file" id="old_data" name="old_data" class="form-control" required><br>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-4">
-                        <select class="form-select" id="select_year" name="select_year" required>
+                        <select class="form-select" id="assy_old_year" name="assy_old_year" required>
                             <option value="" disabled selected>請選擇上傳資料之年份</option>
                             {% for year in years %}
                                 <option value="{{ year }}">{{ year }}</option>
@@ -75,7 +78,7 @@
                         </select>
                     </div>
                     <div class="col-sm-4">
-                        <select class="form-select" id="select_month" name="select_month" required>
+                        <select class="form-select" id="assy_old_month" name="assy_old_month" required>
                             <option value="" disabled selected>請選擇上傳資料之月份</option>
                             {% for month in months %}
                                 <option value="{{ month }}">{{ month }}</option>
@@ -83,7 +86,7 @@
                         </select>
                     </div>
                     <div class="col-sm-4">
-                        <input type="submit" value="Submit" class="btn btn-primary" name="old_data_upload_button">
+                        <input type="submit" value="Submit" class="btn btn-primary" name="old_data_upload_assy">
                     </div>
                 </div>
             </div>
