@@ -161,17 +161,18 @@ def for_error(request):
     
 
 def upload(request):
-    current_year = int(datetime.now().year)
-    years = [current_year - i for i in range(2)]
-    months = list(range(1, 13))
-    context = {
-        'years': years, 
-        'months': months, 
-        'current_year': current_year,
-    }
-    return render(request, "EOL_p0.html", context)
-    #except:
-    #   return render(request, "ERROR_Page.html")
+    try:
+        current_year = int(datetime.now().year)
+        years = [current_year - i for i in range(2)]
+        months = list(range(1, 13))
+        context = {
+            'years': years, 
+            'months': months, 
+            'current_year': current_year,
+        }
+        return render(request, "EOL_p0.html", context)
+    except:
+       return render(request, "ERROR_Page.html")
     
 def daily(request):
     try:
@@ -468,7 +469,7 @@ def monthly(request):
 
             else:
                 grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
-                work_centers = ['EOL-AQ','EOL-ATE','EOL-OE','EOL-OPT']
+                work_centers = grouped_df.drop_duplicates(subset=['WorkCenter'])['WorkCenter'].tolist()
                 num_centers = len(work_centers)
                 rows = (num_centers // 2) + (num_centers % 2 > 0)
                 cols = min(num_centers, 2)

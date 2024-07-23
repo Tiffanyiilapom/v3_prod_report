@@ -467,7 +467,7 @@ def monthly(request):
 
             else:
                 grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
-                work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
+                work_centers = grouped_df.drop_duplicates(subset=['WorkCenter'])['WorkCenter'].tolist()
                 num_centers = len(work_centers)
                 rows = (num_centers // 3) + (num_centers % 3 > 0)
                 cols = min(num_centers, 3)
