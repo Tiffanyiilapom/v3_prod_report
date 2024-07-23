@@ -40,6 +40,7 @@ def conditional_round(x):
 def table_process(df):
     df.drop(index=0, inplace=True)
     df = df.dropna(subset=['班別', '線別'], how='all')
+    df = df[~((df['班別'] == '班別') & (df['線別'] == '線別'))]
     df.loc[:,'制令號'] = df['制令號'].astype(str)
     df.loc[:,'制令號'] = df['制令號'].str.replace(r"^[\'\"]", "", regex=True)
     with pd.option_context("future.no_silent_downcasting", True):
@@ -304,10 +305,80 @@ def daily(request):
         return render(request, 'ASSY_p1.html',context)
     
 def weekly(request):
-    try:
-        return render(request, "ASSY_p2.html")
-    except:
-        return render(request, "ERROR_Page.html")
+    global dash
+    # 選擇別週
+    if request.method == "POST" and 'select_week' in request.POST and not dash.anyNone(dash.by_date):
+        select_week = request.POST.get("assy_select2")
+        start = int(nozero(select_week[8:10])) # 該周的開始
+        end = int(nozero(select_week[-2:])) # 該周的結束
+        dates = list(range(start, end+1)) # 取出該周的每一天
+        # 表格資料
+        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        table_data = table_data.loc[:, ['日期', '平均\n目標UPH\n（PCS）', '投產工時\n(Hrs)', '目標產量     （PCS）','實際產量          （PCS）', '產能效率*',
+            '稼動時間        Run（H）', '调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)',
+            '待料時間Idel\n（min）', '未編制開線', '檢驗報廢數', '待判&不良品數', '報廢數', '不良率', ' 直通率\n%']]
+        week_data = table_data[table_data['日期'].isin(dates)].copy()
+        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['投產工時\n(Hrs)'].astype(float)
+        dash.week = process_date(week_data)
+
+        # 圓餅圖資料
+        pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        title = select_week +' ASSY Production Time Distribution'
+        dash.fig_forweek = func_for_pie(pie_data, title)
+
+        context = {
+            'data': dash.week.values.tolist(),
+            'columns': dash.week.columns,
+            'placeholder_fig': dash.fig_forweek,
+            'options': dash.weekly_options,
+        }
+
+        return render(request, 'ASSY_p2.html',context)
+    
+    # 預設跳轉至當周
+    elif not dash.anyNone(dash.by_date) : 
+        # 設定選單內容
+        dates = dash.options
+        options = find_date_ranges(dates)
+        dash.weekly_options = options
+        select_week = options[-1] # 取出最新周次
+        start = int(nozero(select_week[8:10])) # 該周的開始
+        end = int(nozero(select_week[-2:])) # 該周的結束
+        dates = list(range(start, end+1)) # 取出該周的每一天
+        # 表格資料
+        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        table_data = table_data.loc[:, ['日期', '平均\n目標UPH\n（PCS）', '投產工時\n(Hrs)', '目標產量     （PCS）','實際產量          （PCS）', '產能效率*',
+            '稼動時間        Run（H）', '调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)',
+            '待料時間Idel\n（min）', '未編制開線', '檢驗報廢數', '待判&不良品數', '報廢數', '不良率', ' 直通率\n%']]
+        week_data = table_data[table_data['日期'].isin(dates)].copy()
+        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['投產工時\n(Hrs)'].astype(float)
+        dash.week = process_date(week_data)
+
+        # 圓餅圖資料
+        pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+        title = select_week +' ASSY Production Time Distribution'
+        dash.fig_forweek = func_for_pie(pie_data, title)
+
+        context = {
+            'data': dash.week.values.tolist(),
+            'columns': dash.week.columns,
+            'placeholder_fig': dash.fig_forweek,
+            'options': dash.weekly_options,
+        }
+        
+        return render(request, 'ASSY_p2.html',context)
+    
+    else: # 如果還沒上傳資料就點過來
+        placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
+        placeholder_fig = dash.placeholder_figure()
+        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+        context = {
+            'data': placeholder_df.values.tolist(),
+            'columns': placeholder_df.columns,
+            'placeholder_fig': placeholder_fig,
+        }
+        return render(request, 'ASSY_p2.html',context)
     
 def monthly(request):
     try:

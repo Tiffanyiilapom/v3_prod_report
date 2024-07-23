@@ -56,6 +56,7 @@ def conditional_round(x):
 def table_process(df):
     df.drop(index=0, inplace=True)
     df = df.dropna(subset=['班別', '機台編號'], how='all')
+    df = df[~((df['班別'] == '班別') & (df['機台編號'] == '機台編號'))]
     df.loc[:,'製令編號'] = df['製令編號'].astype(str)
     df.loc[:,'製令編號'] = df['製令編號'].str.replace(r"^[\'\"]", "", regex=True)
     with pd.option_context("future.no_silent_downcasting", True):
