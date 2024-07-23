@@ -175,360 +175,361 @@ def upload(request):
         return render(request, "ERROR_Page.html")
 
 def daily(request):
-    #try:
-    global dash
-    # 預設呈現最新的工作天
-    if request.method == "POST" and 'data_upload_button' in request.POST:
-        dash.flag = False # 代表有新上傳資料
-        data = request.FILES.get('data')
-        dash.data = data.read()
-        data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='SMT_BY日期總表', skiprows=3, usecols='H:AI')
-        dash.by_date = data_bydate
-        now = datetime.now()
-        year = now.year
-        month = now.month
+    try:
+        global dash
+        # 預設呈現最新的工作天
+        if request.method == "POST" and 'data_upload_button' in request.POST:
+            dash.flag = False # 代表有新上傳資料
+            data = request.FILES.get('data')
+            dash.data = data.read()
+            data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='SMT_BY日期總表', skiprows=3, usecols='H:AI')
+            dash.by_date = data_bydate
+            now = datetime.now()
+            year = now.year
+            month = now.month
 
-        # 得到已發生的所有工作天
-        options = get_all_workdays(year, month, data_bydate)
-        dash.options = options
-        # 取出最後一個工作天
-        last_workday = options[-1]
-        # 有0的話去0
-        last_two_digits = nozero(last_workday[-2:])
+            # 得到已發生的所有工作天
+            options = get_all_workdays(year, month, data_bydate)
+            dash.options = options
+            # 取出最後一個工作天
+            last_workday = options[-1]
+            # 有0的話去0
+            last_two_digits = nozero(last_workday[-2:])
 
-        # 取出要畫圓餅圖的資料及欄位
-        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
-        title = str(last_workday)+' SMT Production Time Distribution'
-        dash.fig_fordaily = func_for_pie(pie_data, title)
+            # 取出要畫圓餅圖的資料及欄位
+            pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
+            title = str(last_workday)+' SMT Production Time Distribution'
+            dash.fig_fordaily = func_for_pie(pie_data, title)
 
-        # 下方表格
-        data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        dash.day = table_process(data_day)
-        dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
-        dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
+            # 下方表格
+            data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
+            dash.day = table_process(data_day)
+            dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
+            dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
 
-        context = {
-            'all_data': dash.day.values.tolist(),
-            'all_columns': dash.day.columns,
-            'mass_data': dash.mass_production.values.tolist(),
-            'mass_columns': dash.mass_production.columns,
-            'trial_data': dash.trial_production.values.tolist(),
-            'trial_columns': dash.trial_production.columns,
-            'placeholder_fig': dash.fig_fordaily,
-            'options': dash.options,
-        }
-
-        return render(request, 'SMT_p1.html',context)
-    
-    # 若上傳非當月資料
-    elif request.method == "POST" and 'old_data_upload_button' in request.POST:
-        dash.flag = False
-        data = request.FILES.get('data_old')
-        year = int(request.POST.get("select_year"))
-        month = int(request.POST.get("select_month"))
-        dash.data = data.read()
-        data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='SMT_BY日期總表', skiprows=3, usecols='H:AI')
-        dash.by_date = data_bydate
-
-        # 得到已發生的所有工作天
-        options = get_all_workdays(year, month, data_bydate)
-        dash.options = options
-        # 取出最後一個工作天
-        last_workday = options[-1]
-        # 有0的話去0
-        last_two_digits = nozero(last_workday[-2:])
-
-        # 取出要畫圓餅圖的資料及欄位
-        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
-        title = str(last_workday) +' SMT Production Time Distribution'
-        dash.fig_fordaily = func_for_pie(pie_data, title)
-
-        # 下方表格
-        data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        dash.day = table_process(data_day)
-        dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
-        dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
-
-        context = {
-            'all_data': dash.day.values.tolist(),
-            'all_columns': dash.day.columns,
-            'mass_data': dash.mass_production.values.tolist(),
-            'mass_columns': dash.mass_production.columns,
-            'trial_data': dash.trial_production.values.tolist(),
-            'trial_columns': dash.trial_production.columns,
-            'placeholder_fig': dash.fig_fordaily,
-            'options': dash.options,
-        }
-
-        return render(request, 'SMT_p1.html',context)
-    
-    # 若選擇非預設的日期
-    elif request.method == "POST" and 'select_button' in request.POST:
-        select_day = request.POST.get("select1")
-        last_two_digits = nozero(select_day[-2:])
-
-        # 取出要畫圓餅圖的資料及欄位
-        pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
-        title = select_day +' SMT Production Time Distribution'
-        dash.fig_fordaily = func_for_pie(pie_data, title)
-
-        # 下方表格
-        data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
-        dash.day = table_process(data_day)
-        dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
-        dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
-
-        context = {
-            'all_data': dash.day.values.tolist(),
-            'all_columns': dash.day.columns,
-            'mass_data': dash.mass_production.values.tolist(),
-            'mass_columns': dash.mass_production.columns,
-            'trial_data': dash.trial_production.values.tolist(),
-            'trial_columns': dash.trial_production.columns,
-            'placeholder_fig': dash.fig_fordaily,
-            'options': dash.options,
-        }
-
-        return render(request, 'SMT_p1.html',context)
-        
-    # 從別頁點回來的話把資料留住
-    elif not dash.anyNone(dash.day): 
-        
-        context = {
-            'all_data': dash.day.values.tolist(),
-            'all_columns': dash.day.columns,
-            'mass_data': dash.mass_production.values.tolist(),
-            'mass_columns': dash.mass_production.columns,
-            'trial_data': dash.trial_production.values.tolist(),
-            'trial_columns': dash.trial_production.columns,
-            'placeholder_fig': dash.fig_fordaily,
-            'options': dash.options,
-        }
-        
-        return render(request, 'SMT_p1.html',context)
-    
-    # 尚未上傳資料
-    else:
-        placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
-        placeholder_fig = dash.placeholder_figure()
-        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
-
-        context = {
-            'all_data': placeholder_df.values.tolist(),
-            'all_columns': placeholder_df.columns,
-            'placeholder_fig': placeholder_fig,
-        }
-        return render(request, 'SMT_p1.html',context)
-    #except:
-        #for_error(request)
-        #return render(request, "ERROR_Page.html")
-
-
-def weekly(request):
-    #try:
-    global dash
-    # 選擇別週
-    if request.method == "POST" and 'select_week_button' in request.POST:
-        select_week = request.POST.get("select2")
-        start = int(nozero(select_week[8:10])) # 該周的開始
-        end = int(nozero(select_week[-2:])) # 該周的結束
-        dates = list(range(start, end+1)) # 取出該周的每一天
-        # 表格資料
-        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
-        table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
-        week_data = table_data[table_data['日期'].isin(dates)].copy()
-        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
-        dash.week = process_date(week_data)
-
-        # 圓餅圖資料
-        pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
-        title = select_week +' SMT Production Time Distribution'
-        dash.fig_forweek = func_for_pie(pie_data, title)
-
-        context = {
-            'data': dash.week.values.tolist(),
-            'columns': dash.week.columns,
-            'placeholder_fig': dash.fig_forweek,
-            'options': dash.weekly_options,
-        }
-
-        return render(request, 'SMT_p2.html',context)
-    
-    # 預設跳轉至當周
-    elif not dash.anyNone(dash.by_date) : 
-        # 設定選單內容
-        dates = dash.options
-        options = find_date_ranges(dates)
-        dash.weekly_options = options
-        select_week = options[-1] # 取出最新周次
-        start = int(nozero(select_week[8:10])) # 該周的開始
-        end = int(nozero(select_week[-2:])) # 該周的結束
-        dates = list(range(start, end+1)) # 取出該周的每一天
-        # 表格資料
-        table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
-        table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
-        week_data = table_data[table_data['日期'].isin(dates)].copy()
-        week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
-        dash.week = process_date(week_data)
-
-        # 圓餅圖資料
-        pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
-        title = select_week +' SMT Production Time Distribution'
-        dash.fig_forweek = func_for_pie(pie_data, title)
-
-        context = {
-            'data': dash.week.values.tolist(),
-            'columns': dash.week.columns,
-            'placeholder_fig': dash.fig_forweek,
-            'options': dash.weekly_options,
-        }
-        
-        return render(request, 'SMT_p2.html',context)
-    
-    else: # 如果還沒上傳資料就點過來
-        placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
-        placeholder_fig = dash.placeholder_figure()
-        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
-
-        context = {
-            'data': placeholder_df.values.tolist(),
-            'columns': placeholder_df.columns,
-            'placeholder_fig': placeholder_fig,
-        }
-        return render(request, 'SMT_p2.html',context)
-    #except:
-        #for_error(request)
-        #return render(request, "ERROR_Page.html")
-
-def monthly(request):
-    #try:
-    if not dash.anyNone(dash.by_date, dash.sixplot_html) and dash.flag:   # 點回來留住資料
-
-        context = {
-            'placeholder_fig': dash.fig_formonth,
-            'six_plot': dash.sixplot_html,
-        }
-        
-        return render(request, 'SMT_p3.html',context)
-    
-    elif not dash.anyNone(dash.by_date): # 初始畫面
-        dates = dash.options # 2024-07-18
-        year_month = dates[0][:7] # 2024-07
-        days = [date.split('-')[2] for date in dates] # 01.02.03.04...17.18
-        processed_days = [int(nozero(day)) for day in days] # 1.2.3.4...17.18
-        dates = pd.to_datetime(dates).strftime('%Y%m%d') #20240718
-        head = pd.to_datetime(year_month).strftime('%Y%m') # 202407
-
-        # 爬蟲
-        base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
-        site = '1010'
-        workcenter = 'SMT'
-        grouped_df = pd.DataFrame()
-
-        for day in range(processed_days[0], processed_days[-1]+1):
-            query_date = head+f'{day:02d}'
-            params = {
-                'site': site,
-                'querymonth': query_date,
-                'workcenter': workcenter
+            context = {
+                'all_data': dash.day.values.tolist(),
+                'all_columns': dash.day.columns,
+                'mass_data': dash.mass_production.values.tolist(),
+                'mass_columns': dash.mass_production.columns,
+                'trial_data': dash.trial_production.values.tolist(),
+                'trial_columns': dash.trial_production.columns,
+                'placeholder_fig': dash.fig_fordaily,
+                'options': dash.options,
             }
 
-            try:
-                url = requests.get(base_url, params=params)
-                if url.status_code == 200:
-                    soup = BeautifulSoup(url.text, 'html.parser')
-                    table = soup.find('table')
-                    if table:
-                        headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
-                        rows = []
-                        for row in table.find_all('tr'):
-                            cells = row.find_all('td')
-                            row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
-                            if row_data:  
-                                rows.append(row_data)
-                        df = pd.DataFrame(rows, columns=headers, index=None)
-                        df = df.iloc[:-1]
-                        df = df.iloc[:, :-1]
-                        df = df.drop('WorkOrderType', axis=1)
-                        df['PostDate'] = pd.to_datetime(df['PostDate'], format='%Y%m%d').dt.strftime('%Y-%m-%d')
-                        df['ActManHour'] = df['ActManHour'].astype(float)
-                        df['StdManHour'] = df['StdManHour'].astype(float)
-                        df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
-                        grouped_df = pd.concat([grouped_df, df], axis=0)
-            except requests.exceptions.RequestException as e:
-                continue
+            return render(request, 'SMT_p1.html',context)
+        
+        # 若上傳非當月資料
+        elif request.method == "POST" and 'old_data_upload_button' in request.POST:
+            dash.flag = False
+            data = request.FILES.get('data_old')
+            year = int(request.POST.get("select_year"))
+            month = int(request.POST.get("select_month"))
+            dash.data = data.read()
+            data_bydate = pd.read_excel(io.BytesIO(dash.data), sheet_name='SMT_BY日期總表', skiprows=3, usecols='H:AI')
+            dash.by_date = data_bydate
 
-        if grouped_df.empty:  # 若報工平台尚無該月資料 e.g. 8/2時報工可能只到7/31
+            # 得到已發生的所有工作天
+            options = get_all_workdays(year, month, data_bydate)
+            dash.options = options
+            # 取出最後一個工作天
+            last_workday = options[-1]
+            # 有0的話去0
+            last_two_digits = nozero(last_workday[-2:])
+
+            # 取出要畫圓餅圖的資料及欄位
+            pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
+            title = str(last_workday) +' SMT Production Time Distribution'
+            dash.fig_fordaily = func_for_pie(pie_data, title)
+
+            # 下方表格
+            data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
+            dash.day = table_process(data_day)
+            dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
+            dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
+
+            context = {
+                'all_data': dash.day.values.tolist(),
+                'all_columns': dash.day.columns,
+                'mass_data': dash.mass_production.values.tolist(),
+                'mass_columns': dash.mass_production.columns,
+                'trial_data': dash.trial_production.values.tolist(),
+                'trial_columns': dash.trial_production.columns,
+                'placeholder_fig': dash.fig_fordaily,
+                'options': dash.options,
+            }
+
+            return render(request, 'SMT_p1.html',context)
+        
+        # 若選擇非預設的日期
+        elif request.method == "POST" and 'select_button' in request.POST:
+            select_day = request.POST.get("select1")
+            last_two_digits = nozero(select_day[-2:])
+
+            # 取出要畫圓餅圖的資料及欄位
+            pie_data = dash.by_date[dash.by_date['日期'] == int(last_two_digits)]
+            title = select_day +' SMT Production Time Distribution'
+            dash.fig_fordaily = func_for_pie(pie_data, title)
+
+            # 下方表格
+            data_day = pd.read_excel(io.BytesIO(dash.data), sheet_name=last_two_digits, skiprows=8, usecols='A:AK', dtype={'投產開始\n時間(起)': str, '投產結束\n時間(迄)': str})
+            dash.day = table_process(data_day)
+            dash.mass_production = dash.day[dash.day['制令號'].str.startswith('1', na=False)]
+            dash.trial_production = dash.day[dash.day['制令號'].str.startswith('3', na=False)]
+
+            context = {
+                'all_data': dash.day.values.tolist(),
+                'all_columns': dash.day.columns,
+                'mass_data': dash.mass_production.values.tolist(),
+                'mass_columns': dash.mass_production.columns,
+                'trial_data': dash.trial_production.values.tolist(),
+                'trial_columns': dash.trial_production.columns,
+                'placeholder_fig': dash.fig_fordaily,
+                'options': dash.options,
+            }
+
+            return render(request, 'SMT_p1.html',context)
+            
+        # 從別頁點回來的話把資料留住
+        elif not dash.anyNone(dash.day): 
+            
+            context = {
+                'all_data': dash.day.values.tolist(),
+                'all_columns': dash.day.columns,
+                'mass_data': dash.mass_production.values.tolist(),
+                'mass_columns': dash.mass_production.columns,
+                'trial_data': dash.trial_production.values.tolist(),
+                'trial_columns': dash.trial_production.columns,
+                'placeholder_fig': dash.fig_fordaily,
+                'options': dash.options,
+            }
+            
+            return render(request, 'SMT_p1.html',context)
+        
+        # 尚未上傳資料
+        else:
+            placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
             placeholder_fig = dash.placeholder_figure()
             placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
-        else:
-            grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
-            work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
-            num_centers = len(work_centers)
-            rows = (num_centers // 3) + (num_centers % 3 > 0)
-            cols = min(num_centers, 3)
-
-            fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
-
-            showlegend_bar = True
-            showlegend_line = True
-
-            for index, wc in enumerate(work_centers):
-                filtered_data = grouped_df[grouped_df['WorkCenter'] == wc]
-            
-                row = index // cols + 1
-                col = index % cols + 1
-
-                shape = dict(
-                    type="line",
-                    x0=filtered_data['PostDate'].min(), y0=1, x1=filtered_data['PostDate'].max(), y1=1,
-                    line=dict(color="red", width=3, dash="dashdot"),
-                    xref=f'x{index+1}', yref=f'y{index+1}')
-                
-                fig.add_shape(shape, row=row, col=col)
-                fig.add_trace(go.Bar(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],name='Std/Act',marker_color='rgba(65, 105, 225, 0.6)',showlegend=showlegend_bar), row=row, col=col)
-                fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
-                fig.update_xaxes(title_text='PostDate', row=row, col=col)
-
-                lb = filtered_data['Std/Act'].min()
-                ub =filtered_data['Std/Act'].max()
-                lb = min(lb, 0.5)
-                ub = max(ub, 1.5)
-                fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
-                
-                showlegend_bar = False
-                showlegend_line = False
-
-            fig.update_layout(height=300 * rows, width=350 * cols, title_text="Achievement Rates for Different Work Centers",title_x=0.5)
-            dash.sixplot_html = pio.to_html(fig)
-            dash.flag = True
-
-
-        # 圓餅圖資料
-        pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
-        title = year_month +' SMT Production Time Distribution'
-        dash.fig_formonth = func_for_pie(pie_data, title)
-
-        context = {
-            'placeholder_fig': dash.fig_formonth,
-            'six_plot': dash.sixplot_html,
-        }
+            context = {
+                'all_data': placeholder_df.values.tolist(),
+                'all_columns': placeholder_df.columns,
+                'placeholder_fig': placeholder_fig,
+            }
+            return render(request, 'SMT_p1.html',context)
+    except:
+        for_error(request)
+        return render(request, 'ERROR_Page.html')
         
-        return render(request, 'SMT_p3.html',context)
-    
-    else: # 如果還沒上傳資料就點過來
-        placeholder_fig = dash.placeholder_figure()
-        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
-        context = {
-            'placeholder_fig': placeholder_fig,
-            'six_plot': placeholder_fig,
-        }
-        return render(request, 'SMT_p3.html',context)
-    #except:
-        #for_error(request)
-        #return render(request, "ERROR_Page.html")
+
+def weekly(request):
+    try:
+        global dash
+        # 選擇別週
+        if request.method == "POST" and 'select_week_button' in request.POST:
+            select_week = request.POST.get("select2")
+            start = int(nozero(select_week[8:10])) # 該周的開始
+            end = int(nozero(select_week[-2:])) # 該周的結束
+            dates = list(range(start, end+1)) # 取出該周的每一天
+            # 表格資料
+            table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+            table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+                '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+            week_data = table_data[table_data['日期'].isin(dates)].copy()
+            week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+            dash.week = process_date(week_data)
+
+            # 圓餅圖資料
+            pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+            title = select_week +' SMT Production Time Distribution'
+            dash.fig_forweek = func_for_pie(pie_data, title)
+
+            context = {
+                'data': dash.week.values.tolist(),
+                'columns': dash.week.columns,
+                'placeholder_fig': dash.fig_forweek,
+                'options': dash.weekly_options,
+            }
+
+            return render(request, 'SMT_p2.html',context)
+        
+        # 預設跳轉至當周
+        elif not dash.anyNone(dash.by_date) : 
+            # 設定選單內容
+            dates = dash.options
+            options = find_date_ranges(dates)
+            dash.weekly_options = options
+            select_week = options[-1] # 取出最新周次
+            start = int(nozero(select_week[8:10])) # 該周的開始
+            end = int(nozero(select_week[-2:])) # 該周的結束
+            dates = list(range(start, end+1)) # 取出該周的每一天
+            # 表格資料
+            table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+            table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+                '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+            week_data = table_data[table_data['日期'].isin(dates)].copy()
+            week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
+            dash.week = process_date(week_data)
+
+            # 圓餅圖資料
+            pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+            title = select_week +' SMT Production Time Distribution'
+            dash.fig_forweek = func_for_pie(pie_data, title)
+
+            context = {
+                'data': dash.week.values.tolist(),
+                'columns': dash.week.columns,
+                'placeholder_fig': dash.fig_forweek,
+                'options': dash.weekly_options,
+            }
+            
+            return render(request, 'SMT_p2.html',context)
+        
+        else: # 如果還沒上傳資料就點過來
+            placeholder_df = pd.DataFrame(columns=['Please', 'Upload', 'Data', 'First'])
+            placeholder_fig = dash.placeholder_figure()
+            placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+            context = {
+                'data': placeholder_df.values.tolist(),
+                'columns': placeholder_df.columns,
+                'placeholder_fig': placeholder_fig,
+            }
+            return render(request, 'SMT_p2.html',context)
+    except:
+        for_error(request)
+        return render(request, 'ERROR_Page.html')
+
+def monthly(request):
+    try:
+        if not dash.anyNone(dash.by_date, dash.sixplot_html) and dash.flag:   # 點回來留住資料
+
+            context = {
+                'placeholder_fig': dash.fig_formonth,
+                'six_plot': dash.sixplot_html,
+            }
+            
+            return render(request, 'SMT_p3.html',context)
+        
+        elif not dash.anyNone(dash.by_date): # 初始畫面
+            dates = dash.options # 2024-07-18
+            year_month = dates[0][:7] # 2024-07
+            days = [date.split('-')[2] for date in dates] # 01.02.03.04...17.18
+            processed_days = [int(nozero(day)) for day in days] # 1.2.3.4...17.18
+            dates = pd.to_datetime(dates).strftime('%Y%m%d') #20240718
+            head = pd.to_datetime(year_month).strftime('%Y%m') # 202407
+
+            # 爬蟲
+            base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
+            site = '1010'
+            workcenter = 'SMT'
+            grouped_df = pd.DataFrame()
+
+            for day in range(processed_days[0], processed_days[-1]+1):
+                query_date = head+f'{day:02d}'
+                params = {
+                    'site': site,
+                    'querymonth': query_date,
+                    'workcenter': workcenter
+                }
+
+                try:
+                    url = requests.get(base_url, params=params)
+                    if url.status_code == 200:
+                        soup = BeautifulSoup(url.text, 'html.parser')
+                        table = soup.find('table')
+                        if table:
+                            headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
+                            rows = []
+                            for row in table.find_all('tr'):
+                                cells = row.find_all('td')
+                                row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
+                                if row_data:  
+                                    rows.append(row_data)
+                            df = pd.DataFrame(rows, columns=headers, index=None)
+                            df = df.iloc[:-1]
+                            df = df.iloc[:, :-1]
+                            df = df.drop('WorkOrderType', axis=1)
+                            df['PostDate'] = pd.to_datetime(df['PostDate'], format='%Y%m%d').dt.strftime('%Y-%m-%d')
+                            df['ActManHour'] = df['ActManHour'].astype(float)
+                            df['StdManHour'] = df['StdManHour'].astype(float)
+                            df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
+                            grouped_df = pd.concat([grouped_df, df], axis=0)
+                except requests.exceptions.RequestException as e:
+                    continue
+
+            if grouped_df.empty:  # 若報工平台尚無該月資料 e.g. 8/2時報工可能只到7/31
+                placeholder_fig = dash.placeholder_figure()
+                placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+            else:
+                grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
+                work_centers = ['SMT', 'SMT-BOT', 'SMT-ICT', 'SMT-OE', 'SMT-TOP', 'SMT-LAS']
+                num_centers = len(work_centers)
+                rows = (num_centers // 3) + (num_centers % 3 > 0)
+                cols = min(num_centers, 3)
+
+                fig = make_subplots(rows=rows, cols=cols, subplot_titles=[f'{wc} Achievement Rate' for wc in work_centers])
+
+                showlegend_bar = True
+                showlegend_line = True
+
+                for index, wc in enumerate(work_centers):
+                    filtered_data = grouped_df[grouped_df['WorkCenter'] == wc]
+                
+                    row = index // cols + 1
+                    col = index % cols + 1
+
+                    shape = dict(
+                        type="line",
+                        x0=filtered_data['PostDate'].min(), y0=1, x1=filtered_data['PostDate'].max(), y1=1,
+                        line=dict(color="red", width=3, dash="dashdot"),
+                        xref=f'x{index+1}', yref=f'y{index+1}')
+                    
+                    fig.add_shape(shape, row=row, col=col)
+                    fig.add_trace(go.Bar(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],name='Std/Act',marker_color='rgba(65, 105, 225, 0.6)',showlegend=showlegend_bar), row=row, col=col)
+                    fig.add_trace(go.Scatter(x=filtered_data['PostDate'],y=filtered_data['Std/Act'],mode='lines+markers',name='Std/Act Line',line=dict(color='darkslateblue'),showlegend=showlegend_line), row=row, col=col)
+                    fig.update_xaxes(title_text='PostDate', row=row, col=col)
+
+                    lb = filtered_data['Std/Act'].min()
+                    ub =filtered_data['Std/Act'].max()
+                    lb = min(lb, 0.5)
+                    ub = max(ub, 1.5)
+                    fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
+                    
+                    showlegend_bar = False
+                    showlegend_line = False
+
+                fig.update_layout(height=300 * rows, width=350 * cols, title_text="Achievement Rates for Different Work Centers",title_x=0.5)
+                dash.sixplot_html = pio.to_html(fig)
+                dash.flag = True
+
+
+            # 圓餅圖資料
+            pie_data = dash.by_date[dash.by_date['日期'].isin(processed_days)]
+            title = year_month +' SMT Production Time Distribution'
+            dash.fig_formonth = func_for_pie(pie_data, title)
+
+            context = {
+                'placeholder_fig': dash.fig_formonth,
+                'six_plot': dash.sixplot_html,
+            }
+            
+            return render(request, 'SMT_p3.html',context)
+        
+        else: # 如果還沒上傳資料就點過來
+            placeholder_fig = dash.placeholder_figure()
+            placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+            context = {
+                'placeholder_fig': placeholder_fig,
+                'six_plot': placeholder_fig,
+            }
+            return render(request, 'SMT_p3.html',context)
+    except:
+        for_error(request)
+        return render(request, 'ERROR_Page.html')
 
