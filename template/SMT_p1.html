@@ -43,7 +43,7 @@
                 </ul>
             <form class="d-flex" method="POST" action="/daily/">
                 {% csrf_token %}
-                <div style="padding: 0px 2px;">
+                <div style="padding: 0px 1.5px;">
                     <select class="form-select" id="select1" name="select1">
                         <option value="" disabled selected>另擇特定日期</option>
                         {% for option in options %}
