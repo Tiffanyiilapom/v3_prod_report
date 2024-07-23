@@ -82,7 +82,7 @@
                 </thead>
                 <tbody>
                     {% for row in data %}
-                    <tr class="table-light">
+                    <tr>
                         {% for cell in row %}
                         <td>{{cell}}</td>
                         {% endfor %}
@@ -102,16 +102,25 @@
     });
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    var columnCount = document.getElementById("weektable").getElementsByTagName("th").length;
-    var percentColumnIndexes = [columnCount - 14, columnCount - 2, columnCount - 1, columnCount]; 
-    percentColumnIndexes.forEach(index => {
-        const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
-        percentCells.forEach(cell => {
-        let value = parseFloat(cell.textContent);
-            cell.textContent = (value * 100).toFixed(2) + "%";
+    document.addEventListener("DOMContentLoaded", function() {
+
+        var columnCount = document.getElementById("weektable").getElementsByTagName("th").length;
+        var percentColumnIndexes = [columnCount - 14, columnCount - 2, columnCount - 1, columnCount]; 
+
+        percentColumnIndexes.forEach(index => {
+            const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            percentCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                let formattedValue = (value * 100).toFixed(2) + "%";
+                cell.textContent = formattedValue;
+
+                if (index === columnCount - 14 && value < 1) {
+                    cell.classList.add("low-percent");
+                    const row = cell.parentElement;
+                    row.classList.add("highlight-row");
+                }
+            });
         });
-    });
 });
 </script>
 </html>
