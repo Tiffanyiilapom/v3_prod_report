@@ -85,17 +85,32 @@ def find_date_ranges(dates):
     start_date = dates[0]
     end_date = dates[0]
 
-    # 把斷掉的切開
+    def get_week_start(date):
+        return date - timedelta(days=date.weekday())
+
+    def get_week_end(date):
+        return date + timedelta(days=(6 - date.weekday()))
+
+    week_start = get_week_start(start_date)
+    week_end = get_week_end(end_date)
+
     for current_date in dates[1:]:
-        if current_date == end_date + timedelta(days=1):
+        current_week_start = get_week_start(current_date)
+        current_week_end = get_week_end(current_date)
+        
+        if current_week_start == week_start:
             end_date = current_date
+            week_end = current_week_end
         else:
             result.append(f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}")
             start_date = current_date
             end_date = current_date
+            week_start = current_week_start
+            week_end = current_week_end
 
     result.append(f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}")
     return result
+
 
 # 去首0
 def nozero(str):
@@ -326,11 +341,11 @@ def weekly(request):
             end = int(nozero(select_week[-2:])) # 該周的結束
             dates = list(range(start, end+1)) # 取出該周的每一天
             # 表格資料
-            table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+            table_data = dash.by_date[(dash.by_date['日期'].isin(dates)) & (dash.by_date['平均\n目標UPH\n（PCS）'].notna()) & (dash.by_date['投產工時\n(Hrs)'].notna())]
             table_data = table_data.loc[:, ['日期', '平均\n目標UPH\n（PCS）', '投產工時\n(Hrs)', '目標產量     （PCS）','實際產量          （PCS）', '產能效率*',
                 '稼動時間        Run（H）', '调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)',
                 '待料時間Idel\n（min）', '未編制開線', '檢驗報廢數', '待判&不良品數', '報廢數', '不良率', ' 直通率\n%']]
-            week_data = table_data[table_data['日期'].isin(dates)].copy()
+            week_data = table_data.copy()
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
 
@@ -359,11 +374,11 @@ def weekly(request):
             end = int(nozero(select_week[-2:])) # 該周的結束
             dates = list(range(start, end+1)) # 取出該周的每一天
             # 表格資料
-            table_data = dash.by_date[dash.by_date['日期'].isin(dates)]
+            table_data = dash.by_date[(dash.by_date['日期'].isin(dates)) & (dash.by_date['平均\n目標UPH\n（PCS）'].notna()) & (dash.by_date['投產工時\n(Hrs)'].notna())]
             table_data = table_data.loc[:, ['日期', '平均\n目標UPH\n（PCS）', '投產工時\n(Hrs)', '目標產量     （PCS）','實際產量          （PCS）', '產能效率*',
                 '稼動時間        Run（H）', '调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)',
                 '待料時間Idel\n（min）', '未編制開線', '檢驗報廢數', '待判&不良品數', '報廢數', '不良率', ' 直通率\n%']]
-            week_data = table_data[table_data['日期'].isin(dates)].copy()
+            week_data = table_data.copy()
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
 
