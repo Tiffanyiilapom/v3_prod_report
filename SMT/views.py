@@ -53,6 +53,12 @@ def conditional_round(x):
             return round(x, 2)
     return x
 
+def clean_time_format(time_str):
+    if str(time_str).startswith('1900'):
+        return '00:00'
+    time_str = str(time_str)
+    return time_str if len(time_str) == 5 else time_str[:-3]
+
 # 把表格清乾淨
 def table_process(df):
     df = df.dropna(subset=['班別', '線別'], how='all')
@@ -65,10 +71,9 @@ def table_process(df):
     df = df[df['實際產量(PCS）'] != 0 ]
     columns_to_remove = ['Remark'] + ['生產達成率%'] + df.filter(regex=r'^Unnamed').columns.tolist()
     df = df.drop(columns=columns_to_remove, errors='ignore')
-    df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
-    df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
-    df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
-    df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
+    time_columns = ['投產開始\n時間(起)', '投產結束\n時間(迄)']
+    for col in time_columns:
+        df[col] = df[col].apply(clean_time_format)
     df = df.fillna(" ")
     df['未达成/異常原因'] = df['未达成/異常原因'].apply(process_reason)
     df = df.map(conditional_round)

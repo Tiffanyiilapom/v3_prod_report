@@ -21,10 +21,13 @@ from plotly.subplots import make_subplots
 
 dash = My_Dash()
 
+'''
 def process_reason(text):
-    text = str(text)
-    processed_text = text.replace('0', '無')
-    return processed_text
+    if not text:  
+        return '無'
+    return text
+先註解掉因為會造成排序問題
+'''
 
 def conditional_round(x):
     if pd.isna(x):  
@@ -65,6 +68,12 @@ def combine_parts_times(parts, times):
             combined.append(f"{part} : {time}")
     return ', '.join(combined) if combined else None
 
+def clean_time_format(time_str):
+    if str(time_str).startswith('1900'):
+        return '00:00'
+    time_str = str(time_str)
+    return time_str if len(time_str) == 5 else time_str[:-3]
+
 # 把表格清乾淨
 def table_process(df):
     df = df[~((df['班別'] == '班別') & (df['線別'] == '線別'))] 
@@ -97,18 +106,20 @@ def table_process(df):
     df_final = pd.merge(df_other, df_agg, on='Label', how='left')
     df = df_final[final_columns]
 
-    df = df.dropna(subset=['班別', '線別'], how='all')
     df['制令號'] = df['制令號'].apply(process_value)
     with pd.option_context("future.no_silent_downcasting", True):
         df = df.fillna(0).infer_objects(copy=False)
     df = df[df['實際產量(PCS）'] != 0 ]
     columns_to_remove = ['綜整'] + ['Label'] + df.filter(regex=r'^Unnamed').columns.tolist()
     df = df.drop(columns=columns_to_remove, errors='ignore')
-    df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
-    df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
-    df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
-    df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
+    time_columns = ['投產開始\n時間(起)', '投產結束\n時間(迄)']
+    for col in time_columns:
+        df[col] = df[col].apply(clean_time_format)
     df = df.fillna(" ")
+    # df['未達成/異常原因 - 調機:時間'] = df['未達成/異常原因 - 調機:時間'].apply(process_reason)
+    # df['未達成/異常原因 - 維修:時間'] = df['未達成/異常原因 - 維修:時間'].apply(process_reason)
+    # df['Remark - 人員部分:時間'] = df['Remark - 人員部分:時間'].apply(process_reason)
+    # df['Remark - 設備部分:時間'] = df['Remark - 設備部分:時間'].apply(process_reason)
     df = df.map(conditional_round)
     return df
 
