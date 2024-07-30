@@ -248,6 +248,7 @@
 
         var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
         var percentColumnIndexes = [columnCount - 20, columnCount - 18, columnCount - 5, columnCount - 4]; 
+        var integerColumnIndexes = [columnCount - 27, columnCount - 2, columnCount - 1, columnCount]; 
 
         var reasonColumnIndexes = [columnCount - 10, columnCount - 9]; 
         reasonColumnIndexes.forEach(index => {
@@ -272,6 +273,14 @@
                     const row = cell.parentElement;
                     row.classList.add("highlight-row");
                 }
+            });
+        });
+
+        integerColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(0);
             });
         });
     });

@@ -105,6 +105,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         var columnCount = document.getElementById("weektable").getElementsByTagName("th").length;
         var percentColumnIndexes = [columnCount - 13, columnCount - 2, columnCount - 1, columnCount]; 
+        var integerColumnIndexes = [columnCount - 5, columnCount - 4, columnCount - 3];
         percentColumnIndexes.forEach(index => {
             const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
             percentCells.forEach(cell => {
@@ -116,6 +117,14 @@
                 const row = cell.parentElement;
                 row.classList.add("highlight-row");
             }
+        });
+       
+        integerColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(0);
+            });
         });
     });
 });
