@@ -355,8 +355,9 @@ def weekly(request):
             dates = list(range(start, end+1)) # 取出該周的每一天
             # 表格資料
             table_data = dash.by_date[(dash.by_date['日期'].isin(dates)) & (dash.by_date['平均\n目標UPH\n（PCS）'].notna()) & (dash.by_date['計畫投產工時\n(Hrs)'].notna())]
-            table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-                '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+            table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*',
+                                            '稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+                                            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
             week_data = table_data.copy()
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
@@ -387,8 +388,9 @@ def weekly(request):
             dates = list(range(start, end+1)) # 取出該周的每一天
             # 表格資料
             table_data = dash.by_date[(dash.by_date['日期'].isin(dates)) & (dash.by_date['平均\n目標UPH\n（PCS）'].notna()) & (dash.by_date['計畫投產工時\n(Hrs)'].notna())]
-            table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*','稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
-                '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
+            table_data = table_data.loc[:, ['日期','平均\n目標UPH\n（PCS）','計畫投產工時\n(Hrs)','目標產量     （PCS）','實際產量\n(PCS）','產能效率*',
+                                            '稼動時間        Run（H）','调机工时Setup(min)','機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', 
+                                            '物料異常\n時間Hold(min)','借出工時RD(min)','待料時間/其它Idel(min)','檢驗報廢數', '待判&不良品數','報廢數', '不良率', ' 直通率%']]
             week_data = table_data.copy()
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)

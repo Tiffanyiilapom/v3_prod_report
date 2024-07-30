@@ -101,7 +101,7 @@ def table_process(df):
     }).reset_index()
 
     df_other = df[['Label'] + other_columns].drop_duplicates(subset=['Label']).reset_index(drop=True)
-    insert_position = df_other.columns.get_loc('待料時間Idel（min）') + 1
+    insert_position = df_other.columns.get_loc('未編制\n開線') + 1
     final_columns = df_other.columns.tolist()[:insert_position] + ['未達成/異常原因 - 調機:時間'] + ['未達成/異常原因 - 維修:時間'] + ['Remark - 人員部分:時間'] + ['Remark - 設備部分:時間'] + df_other.columns.tolist()[insert_position:]
     df_final = pd.merge(df_other, df_agg, on='Label', how='left')
     df = df_final[final_columns]
@@ -240,7 +240,7 @@ def upload(request):
        return render(request, "ERROR_Page.html")
     
 def daily(request):
-    #try:
+    try:
         global dash
         # 預設呈現最新的工作天
         if request.method == "POST" and 'data_upload_assy' in request.POST:
@@ -385,9 +385,9 @@ def daily(request):
                 'placeholder_fig': placeholder_fig,
             }
             return render(request, 'ASSY_p1.html',context)
-    #except:
-        #for_error(request)
-        #return render(request, 'ERROR_Page.html')
+    except:
+        for_error(request)
+        return render(request, 'ERROR_Page.html')
     
 def weekly(request):
     try:
@@ -404,7 +404,11 @@ def weekly(request):
                 '稼動時間        Run（H）', '调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)',
                 '待料時間Idel\n（min）', '未編制開線', '檢驗報廢數', '待判&不良品數', '報廢數', '不良率', ' 直通率\n%']]
             week_data = table_data.copy()
-            week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['投產工時\n(Hrs)'].astype(float)
+            operating_time = 0
+            not_op = ['调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)','待料時間Idel\n（min）']
+            for item in not_op :
+                operating_time += week_data[item].astype(float)/60
+            week_data ['稼動率'] = (week_data ['投產工時\n(Hrs)'].astype(float) - operating_time) /week_data ['投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
 
             # 圓餅圖資料
@@ -437,7 +441,11 @@ def weekly(request):
                 '稼動時間        Run（H）', '调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)',
                 '待料時間Idel\n（min）', '未編制開線', '檢驗報廢數', '待判&不良品數', '報廢數', '不良率', ' 直通率\n%']]
             week_data = table_data.copy()
-            week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['投產工時\n(Hrs)'].astype(float)
+            operating_time = 0
+            not_op = ['调机工时Setup(min)', '機台維修時間\n  Down(min)','製程異常\n時間Hold(min)', '物料異常\n時間Hold(min)', '借出工時RD(min)','待料時間Idel\n（min）']
+            for item in not_op :
+                operating_time += week_data[item].astype(float)/60
+            week_data ['稼動率'] = (week_data ['投產工時\n(Hrs)'].astype(float) - operating_time) /week_data ['投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
 
             # 圓餅圖資料

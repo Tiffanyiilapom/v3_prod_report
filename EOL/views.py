@@ -361,7 +361,6 @@ def weekly(request):
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
             week_data ['產能\n效率*'] = week_data ['實際產量\n(PCS）'].astype(float)/week_data ['目標產量     （PCS）'].astype(float)
             dash.week = process_date(week_data)
-
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
             title = select_week +' EOL Production Time Distribution'
@@ -394,7 +393,7 @@ def weekly(request):
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
             week_data ['產能\n效率*'] = week_data ['實際產量\n(PCS）'].astype(float)/week_data ['目標產量     （PCS）'].astype(float)
             dash.week = process_date(week_data)
-
+            
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
             title = select_week +' EOL Production Time Distribution'
