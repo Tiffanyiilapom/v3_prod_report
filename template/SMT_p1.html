@@ -85,7 +85,7 @@
                 <thead>
                     <tr>
                         {% for col in all_columns %}
-                        <th scope="col">
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
                             {{ col }}
                         </th>
                         {% endfor %}
@@ -95,7 +95,7 @@
                     {% for row in all_data %}
                     <tr>
                         {% for cell in row %}
-                        <td>{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -108,7 +108,7 @@
                 <thead>
                     <tr>
                         {% for col in mass_columns %}
-                        <th scope="col">
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
                             {{ col }}
                         </th>
                         {% endfor %}
@@ -118,7 +118,7 @@
                     {% for row in mass_data %}
                     <tr>
                         {% for cell in row %}
-                        <td>{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -131,7 +131,7 @@
                 <thead>
                     <tr>
                         {% for col in trial_columns %}
-                        <th scope="col">
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
                             {{ col }}
                         </th>
                         {% endfor %}
@@ -141,7 +141,7 @@
                     {% for row in trial_data %}
                     <tr>
                         {% for cell in row %}
-                        <td>{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -250,6 +250,7 @@
         var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
         var percentColumnIndexes = [columnCount - 17, columnCount - 8, columnCount - 7, columnCount - 1, columnCount]; 
         var integerColumnIndexes = [columnCount - 26, columnCount - 25, columnCount - 4, columnCount - 3, columnCount - 2]; 
+        var float2ColumnIndexes = [columnCount - 21, columnCount - 16]; 
 
         var reasonColumnIndex = columnCount - 6; 
         var reasonCells = document.querySelectorAll(`tbody td:nth-child(${reasonColumnIndex})`);
@@ -280,6 +281,14 @@
             intCells.forEach(cell => {
                 let value = parseFloat(cell.textContent);
                 cell.textContent = value.toFixed(0);
+            });
+        });
+
+        float2ColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(2);
             });
         });
     });

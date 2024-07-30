@@ -74,7 +74,7 @@
                 <thead>
                     <tr>
                         {% for col in columns %}
-                        <th scope="col">
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
                             {{ col }}
                         </th>
                         {% endfor %}
@@ -84,7 +84,7 @@
                     {% for row in data %}
                     <tr>
                         {% for cell in row %}
-                        <td>{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
