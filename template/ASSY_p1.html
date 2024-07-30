@@ -247,15 +247,17 @@
     document.addEventListener("DOMContentLoaded", function() {
 
         var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
-        var percentColumnIndexes = [columnCount - 17, columnCount - 15, columnCount - 6, columnCount - 5]; 
+        var percentColumnIndexes = [columnCount - 20, columnCount - 18, columnCount - 5, columnCount - 4]; 
 
-        var reasonColumnIndex = columnCount - 4 ; 
-        var reasonCells = document.querySelectorAll(`tbody td:nth-child(${reasonColumnIndex})`);
-        reasonCells.forEach(function(cell) {
-            var reasonText = cell.textContent.trim(); 
-            if (reasonText !== "無") {
-                cell.classList.add("problem");
-            }
+        var reasonColumnIndexes = [columnCount - 10, columnCount - 9]; 
+        reasonColumnIndexes.forEach(index => {
+            var reasonCells = document.querySelectorAll(`tbody td:nth-child(${index})`);
+            reasonCells.forEach(function(cell) {
+                var reasonText = cell.textContent.trim(); 
+                if (reasonText !== "無") {
+                    cell.classList.add("problem");
+                }
+            });
         });
 
         percentColumnIndexes.forEach(index => {
@@ -265,7 +267,7 @@
                 let formattedValue = (value * 100).toFixed(2) + "%";
                 cell.textContent = formattedValue;
 
-                if (index === columnCount - 15 && value < 1) {
+                if (index === columnCount - 18 && value < 1) {
                     cell.classList.add("low-percent");
                     const row = cell.parentElement;
                     row.classList.add("highlight-row");

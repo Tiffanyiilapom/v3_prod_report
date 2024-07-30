@@ -39,29 +39,76 @@ def conditional_round(x):
 def process_value(value):
     if pd.isna(value):  
         return value
-    if isinstance(value, (int, float)):  # 如果是数字
+    if isinstance(value, (int, float)):  # 如果是數字
         return str(int(value))
     elif isinstance(value, str):  # 如果是字串
         return value.replace("'", "").replace('"', "")
     return value
 
+# 組裝以六個row為單位，先加label等等才能處理這六個row
+def add_labels(df):
+    labels = []
+    current_label = None
+    
+    for i, value in enumerate(df['班別']):
+        if pd.notna(value):
+            current_label = f'label{(i // 6) + 1}'
+        labels.append(current_label)
+    
+    return labels
+
+# 處理異常原因、Remark
+def combine_parts_times(parts, times):
+    combined = []
+    for part, time in zip(parts, times):
+        if pd.notna(part) and pd.notna(time):
+            combined.append(f"{part} : {time}")
+    return ', '.join(combined) if combined else None
+
 # 把表格清乾淨
 def table_process(df):
+    df = df[~((df['班別'] == '班別') & (df['線別'] == '線別'))] 
+    df['Label'] = add_labels(df)
+    df = df[['Label'] + [col for col in df.columns if col != 'Label']]
+    df = pd.DataFrame(df)
+    df = df.rename(columns={'未达成/異常原因: (分鐘)': '調機','Unnamed: 26':'調機時間', 'Unnamed: 27':'維修','Unnamed: 28':'維修時間',
+                        'Remark: (分鐘)':'人員部分','Unnamed: 30':'人員時間','Unnamed: 31':'設備部分'	, 'Unnamed: 32':'設備時間'})
     df.drop(index=0, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    df['未達成/異常原因 - 調機:時間'] = df.apply(lambda row: combine_parts_times([row['調機']], [row['調機時間']]), axis=1)
+    df['未達成/異常原因 - 維修:時間'] = df.apply(lambda row: combine_parts_times([row['維修']], [row['維修時間']]), axis=1)
+    df['Remark - 人員部分:時間'] = df.apply(lambda row: combine_parts_times([row['人員部分']], [row['人員時間']]), axis=1)
+    df['Remark - 設備部分:時間'] = df.apply(lambda row: combine_parts_times([row['設備部分']], [row['設備時間']]), axis=1)
+
+    other_columns = [col for col in df.columns if col not in ['調機', '調機時間', '維修', '維修時間', '人員部分', '人員時間', '設備部分', '設備時間', 
+                                                              '未達成/異常原因 - 調機:時間', '未達成/異常原因 - 維修:時間', 'Remark - 人員部分:時間', 'Remark - 設備部分:時間', 'Label']]
+
+    df_agg = df.groupby('Label').agg({
+        '未達成/異常原因 - 調機:時間': lambda x: ', '.join(x.dropna()),
+        '未達成/異常原因 - 維修:時間': lambda x: ', '.join(x.dropna()),
+        'Remark - 人員部分:時間': lambda x: ', '.join(x.dropna()),
+        'Remark - 設備部分:時間': lambda x: ', '.join(x.dropna())
+    }).reset_index()
+
+    df_other = df[['Label'] + other_columns].drop_duplicates(subset=['Label']).reset_index(drop=True)
+    insert_position = df_other.columns.get_loc('待料時間Idel（min）') + 1
+    final_columns = df_other.columns.tolist()[:insert_position] + ['未達成/異常原因 - 調機:時間'] + ['未達成/異常原因 - 維修:時間'] + ['Remark - 人員部分:時間'] + ['Remark - 設備部分:時間'] + df_other.columns.tolist()[insert_position:]
+    df_final = pd.merge(df_other, df_agg, on='Label', how='left')
+    df = df_final[final_columns]
+
     df = df.dropna(subset=['班別', '線別'], how='all')
-    df = df[~((df['班別'] == '班別') & (df['線別'] == '線別'))] # 移除excel表中可能不小心被多複製一次的欄位名稱
     df['制令號'] = df['制令號'].apply(process_value)
     with pd.option_context("future.no_silent_downcasting", True):
         df = df.fillna(0).infer_objects(copy=False)
     df = df[df['實際產量(PCS）'] != 0 ]
-    columns_to_remove = ['綜整'] + ['Remark: (分鐘)'] + df.filter(regex=r'^Unnamed').columns.tolist()
+    columns_to_remove = ['綜整'] + ['Label'] + df.filter(regex=r'^Unnamed').columns.tolist()
     df = df.drop(columns=columns_to_remove, errors='ignore')
     df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
     df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].apply(lambda x: '00:00:00' if str(x).startswith('1900') else x)
     df['投產開始\n時間(起)'] = df['投產開始\n時間(起)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
     df['投產結束\n時間(迄)'] = df['投產結束\n時間(迄)'].astype(str).apply(lambda x: x if len(x) == 5 else x[:-3])
     df = df.fillna(" ")
-    df['未达成/異常原因: (分鐘)'] = df['未达成/異常原因: (分鐘)'].apply(process_reason)
     df = df.map(conditional_round)
     return df
 
@@ -182,7 +229,7 @@ def upload(request):
        return render(request, "ERROR_Page.html")
     
 def daily(request):
-    try:
+    #try:
         global dash
         # 預設呈現最新的工作天
         if request.method == "POST" and 'data_upload_assy' in request.POST:
@@ -327,9 +374,9 @@ def daily(request):
                 'placeholder_fig': placeholder_fig,
             }
             return render(request, 'ASSY_p1.html',context)
-    except:
-        for_error(request)
-        return render(request, 'ERROR_Page.html')
+    #except:
+        #for_error(request)
+        #return render(request, 'ERROR_Page.html')
     
 def weekly(request):
     try:
