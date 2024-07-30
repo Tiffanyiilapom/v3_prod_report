@@ -55,7 +55,7 @@ def add_labels(df):
     
     for i, value in enumerate(df['班別']):
         if pd.notna(value):
-            current_label = f'label{(i // 6) + 1}'
+            current_label = f'label{(i // 6) + 1}' # // 取商
         labels.append(current_label)
     
     return labels
@@ -85,7 +85,7 @@ def table_process(df):
     df.drop(index=0, inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    df['未達成/異常原因 - 調機:時間'] = df.apply(lambda row: combine_parts_times([row['調機']], [row['調機時間']]), axis=1)
+    df['未達成/異常原因 - 調機:時間'] = df.apply(lambda row: combine_parts_times([row['調機']], [row['調機時間']]), axis=1)  # axis=1 橫的列
     df['未達成/異常原因 - 維修:時間'] = df.apply(lambda row: combine_parts_times([row['維修']], [row['維修時間']]), axis=1)
     df['Remark - 人員部分:時間'] = df.apply(lambda row: combine_parts_times([row['人員部分']], [row['人員時間']]), axis=1)
     df['Remark - 設備部分:時間'] = df.apply(lambda row: combine_parts_times([row['設備部分']], [row['設備時間']]), axis=1)
@@ -94,7 +94,7 @@ def table_process(df):
                                                               '未達成/異常原因 - 調機:時間', '未達成/異常原因 - 維修:時間', 'Remark - 人員部分:時間', 'Remark - 設備部分:時間', 'Label']]
 
     df_agg = df.groupby('Label').agg({
-        '未達成/異常原因 - 調機:時間': lambda x: ', '.join(x.dropna()),
+        '未達成/異常原因 - 調機:時間': lambda x: ', '.join(x.dropna()),   # 用lambda定義聚合的方式
         '未達成/異常原因 - 維修:時間': lambda x: ', '.join(x.dropna()),
         'Remark - 人員部分:時間': lambda x: ', '.join(x.dropna()),
         'Remark - 設備部分:時間': lambda x: ', '.join(x.dropna())
