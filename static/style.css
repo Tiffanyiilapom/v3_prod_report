@@ -3,6 +3,16 @@
   font-weight: bold; 
 }
 
+.cell-border td, .cell-border th {
+    border: 1px solid #000000 !important; 
+    padding: 8px;
+}
+
+.cell-border {
+    border-collapse: collapse; 
+    width: 100%; 
+}
+
 .right-align {
     text-align: right;
 }
