@@ -84,7 +84,7 @@
                     {% for row in data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: right;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -107,6 +107,7 @@
         var columnCount = document.getElementById("weektable").getElementsByTagName("th").length;
         var percentColumnIndexes = [columnCount - 14, columnCount - 2, columnCount - 1, columnCount]; 
         var integerColumnIndexes = [columnCount - 5, columnCount - 4, columnCount - 3]; 
+        var float2ColumnIndexes = [columnCount - 18, columnCount - 17, columnCount - 16, columnCount - 15, columnCount - 13]; 
 
         percentColumnIndexes.forEach(index => {
             const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
@@ -128,6 +129,14 @@
             intCells.forEach(cell => {
                 let value = parseFloat(cell.textContent);
                 cell.textContent = value.toFixed(0);
+            });
+        });
+
+        float2ColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(2);
             });
         });
 });

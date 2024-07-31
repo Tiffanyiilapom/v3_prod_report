@@ -3,6 +3,10 @@
   font-weight: bold; 
 }
 
+.right-align {
+    text-align: right;
+}
+
 .navbar-collapse {
     background-color: var(--bs-primary);/* Background color for the collapsible menu */
     z-index: 1000;

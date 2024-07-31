@@ -24,9 +24,8 @@ dash = My_Dash()
 def process_reason(text):
     # 無異常的狀況
     text_to_replace = '1. 維修:\n2. 製程:\n3. 待料:\n4. 物料:'
-    # 替代成'無異常'
     if text.strip() == text_to_replace:
-        return '無異常'
+        return ''
     
     # Define the patterns to look for
     patterns = {
@@ -76,6 +75,10 @@ def table_process(df):
     df = df.fillna(" ")
     df['未達成/異常原因'] = df['未達成/異常原因'].apply(process_reason)
     df = df.map(conditional_round)
+    cols = list(df.columns)
+    index1, index2 = cols.index('投入工時'), cols.index('實際UPH')
+    cols[index1], cols[index2] = cols[index2], cols[index1]
+    df = df[cols]
     return df
 
 # 找所有的工作天 (for下拉選單)

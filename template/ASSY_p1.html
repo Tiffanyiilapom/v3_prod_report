@@ -95,7 +95,7 @@
                     {% for row in all_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -118,7 +118,7 @@
                     {% for row in mass_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -141,7 +141,7 @@
                     {% for row in trial_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -249,6 +249,9 @@
         var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
         var percentColumnIndexes = [columnCount - 20, columnCount - 18, columnCount - 5, columnCount - 4]; 
         var integerColumnIndexes = [columnCount - 27, columnCount - 2, columnCount - 1, columnCount]; 
+        var float2ColumnIndexes = [columnCount - 19, columnCount - 17]; 
+        var float1ColumnIndexes = [columnCount - 24, columnCount - 23, columnCount - 22, columnCount - 21]; 
+        var timeColumnIndexes = [columnCount - 26, columnCount - 25]; 
 
         var reasonColumnIndexes = [columnCount - 9, columnCount - 8]; 
         reasonColumnIndexes.forEach(index => {
@@ -267,6 +270,7 @@
                 let value = parseFloat(cell.textContent);
                 let formattedValue = (value * 100).toFixed(2) + "%";
                 cell.textContent = formattedValue;
+                cell.classList.add('right-align');
 
                 if (index === columnCount - 18 && value < 1) {
                     cell.classList.add("low-percent");
@@ -281,8 +285,35 @@
             intCells.forEach(cell => {
                 let value = parseFloat(cell.textContent);
                 cell.textContent = value.toFixed(0);
+                cell.classList.add('right-align');
             });
         });
+
+        float2ColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(2);
+                cell.classList.add('right-align');
+            });
+        });
+
+        float1ColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(1);
+                cell.classList.add('right-align');
+            });
+        });
+
+        timeColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                cell.classList.add('right-align');
+            });
+        });
+        
     });
 </script>
 

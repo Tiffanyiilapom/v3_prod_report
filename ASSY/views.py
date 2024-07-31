@@ -116,11 +116,11 @@ def table_process(df):
     for col in time_columns:
         df[col] = df[col].apply(clean_time_format)
     df = df.fillna(" ")
-    # df['未達成/異常原因 - 調機:時間'] = df['未達成/異常原因 - 調機:時間'].apply(process_reason)
-    # df['未達成/異常原因 - 維修:時間'] = df['未達成/異常原因 - 維修:時間'].apply(process_reason)
-    # df['Remark - 人員部分:時間'] = df['Remark - 人員部分:時間'].apply(process_reason)
-    # df['Remark - 設備部分:時間'] = df['Remark - 設備部分:時間'].apply(process_reason)
     df = df.map(conditional_round)
+    cols = list(df.columns)
+    index1, index2 = cols.index('投入工時\n(Hrs)'), cols.index('實際UPH\npcs)')
+    cols[index1], cols[index2] = cols[index2], cols[index1]
+    df = df[cols]
     return df
 
 # 找所有的工作天 (for下拉選單)

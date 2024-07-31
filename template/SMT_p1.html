@@ -95,7 +95,7 @@
                     {% for row in all_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -118,7 +118,7 @@
                     {% for row in mass_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -141,7 +141,7 @@
                     {% for row in trial_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: left;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -250,13 +250,15 @@
         var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
         var percentColumnIndexes = [columnCount - 17, columnCount - 8, columnCount - 7, columnCount - 1, columnCount]; 
         var integerColumnIndexes = [columnCount - 26, columnCount - 25, columnCount - 4, columnCount - 3, columnCount - 2]; 
-        var float2ColumnIndexes = [columnCount - 21, columnCount - 16]; 
+        var float2ColumnIndexes = [columnCount - 16]; 
+        var float1ColumnIndexes = [columnCount - 21, columnCount - 20, columnCount - 19]; 
+        var timeColumnIndexes = [columnCount - 24, columnCount - 23]; 
 
         var reasonColumnIndex = columnCount - 6; 
         var reasonCells = document.querySelectorAll(`tbody td:nth-child(${reasonColumnIndex})`);
         reasonCells.forEach(function(cell) {
             var reasonText = cell.textContent.trim(); 
-            if (reasonText !== "無異常") {
+            if (reasonText !== "") {
                 cell.classList.add("problem");
             }
         });
@@ -267,6 +269,7 @@
                 let value = parseFloat(cell.textContent);
                 let formattedValue = (value * 100).toFixed(2) + "%";
                 cell.textContent = formattedValue;
+                cell.classList.add('right-align');
 
                 if (index === columnCount - 17 && value < 1) {
                     cell.classList.add("low-percent");
@@ -281,6 +284,8 @@
             intCells.forEach(cell => {
                 let value = parseFloat(cell.textContent);
                 cell.textContent = value.toFixed(0);
+                cell.classList.add('right-align');
+
             });
         });
 
@@ -289,6 +294,25 @@
             intCells.forEach(cell => {
                 let value = parseFloat(cell.textContent);
                 cell.textContent = value.toFixed(2);
+                cell.classList.add('right-align');
+
+            });
+        });
+
+        float1ColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                let value = parseFloat(cell.textContent);
+                cell.textContent = value.toFixed(1);
+                cell.classList.add('right-align');
+
+            });
+        });
+
+        timeColumnIndexes.forEach(index => {
+            const intCells = document.querySelectorAll(`table tbody tr td:nth-child(${index}), table tr:last-child td:nth-child(${index})`);
+            intCells.forEach(cell => {
+                cell.classList.add('right-align');
             });
         });
     });
