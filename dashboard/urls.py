@@ -17,23 +17,35 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from SMT import views as SMT_views 
+from SMT_RT import views as SMT_RT_views
 from EOL import views as EOL_views 
+from EOL_RT import views as EOL_RT_views
 from ASSY import views as ASSY_views
 
 urlpatterns = [
-    # SMT
+    
     path('', SMT_views.upload, name="home"),  
-    path('error/', SMT_views.for_error, name="error"),   
+    path('error/', SMT_views.for_error, name="error"),  
+
+    # SMT
     path('upload/', SMT_views.upload, name='upload'),
     path('daily/', SMT_views.daily, name='daily'),
     path('weekly/', SMT_views.weekly, name='weekly'),
     path('monthly/', SMT_views.monthly, name='monthly'),
+
+    path('smtrt_daily/', SMT_RT_views.daily, name='smtrt_daily'),
+    path('smtrt_weekly/', SMT_RT_views.weekly, name='smtrt_weekly'),
+    path('smtrt_monthly/', SMT_RT_views.monthly, name='smtrt_monthly'),
 
     #EOL
     path('eol_upload/', EOL_views.upload, name='eol_upload'),
     path('eol_daily/', EOL_views.daily, name='eol_daily'),
     path('eol_weekly/', EOL_views.weekly, name='eol_weekly'),
     path('eol_monthly/', EOL_views.monthly, name='eol_monthly'),
+
+    path('eolrt_daily/', EOL_RT_views.daily, name='eolrt_daily'),
+    path('eolrt_weekly/', EOL_RT_views.weekly, name='eolrt_weekly'),
+    path('eolrt_monthly/', EOL_RT_views.monthly, name='eolrt_monthly'),
 
     #ASSY
     path('assy_upload/', ASSY_views.upload, name='assy_upload'),

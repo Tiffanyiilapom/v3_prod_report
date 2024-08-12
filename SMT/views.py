@@ -9,7 +9,6 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import plotly.io as pio
 import plotly.express as px
-import seaborn as sns
 from datetime import datetime, timedelta, date
 import requests
 import re
