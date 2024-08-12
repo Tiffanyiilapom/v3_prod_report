@@ -580,7 +580,8 @@ def monthly(request):
                     ub =filtered_data['Std/Act'].max()
                     lb = min(lb, 0.5)
                     ub = max(ub, 1.5)
-                    fig.update_yaxes(title_text='Std/Act', range=[lb-0.05, ub+0.05], row=row, col=col)
+                    fig.update_yaxes(title_text='Std/Act', range=[lb-0.1, ub+0.1], row=row, col=col)
+                    fig.update_xaxes(tickformat='%b %d', row=row, col=col)
                     
                     showlegend_bar = False
                     showlegend_line = False
