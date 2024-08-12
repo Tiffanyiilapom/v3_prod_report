@@ -65,8 +65,10 @@ def daily(request):
         placeholder_fig = dash.placeholder_figure()
         placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
+    today = date.today().strftime('%Y-%m-%d')
     context = {
         'placeholder_fig': placeholder_fig,
+        'today':today,
     }
 
     return render(request, 'SMT_RT_p1.html', context)

@@ -42,6 +42,13 @@
                         <a class="nav-link large-font" href="/eolrt_monthly/" style="font-size: 1.1em;">自選期間</a>
                     </li>
                 </ul>
+                <form class="d-flex" method="POST" action="/eolrt_daily/">
+                    {% csrf_token %}
+                    <div style="padding: 0px 1.5px;">
+                        <input type="date" id="datePicker" name="date" class="form-control" style="width:200px;" max="{{ today }}">
+                    </div>
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit" name="select_button">Go</button>
+                </form>
             </div>
         </div>
     </nav>

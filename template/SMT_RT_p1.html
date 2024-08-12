@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.0.0-beta5/dist/css/tempus-dominus.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.0.0-beta5/dist/js/tempus-dominus.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css">
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
@@ -42,6 +44,13 @@
                         <a class="nav-link large-font" href="/smtrt_monthly/" style="font-size: 1.1em;">自選期間</a>
                     </li>
                 </ul>
+                <form class="d-flex" method="POST" action="/smtrt_daily/">
+                    {% csrf_token %}
+                    <div style="padding: 0px 1.5px;">
+                        <input type="date" id="datePicker" name="date" class="form-control" style="width:200px;" max="{{ today }}">
+                    </div>
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit" name="select_button">Go</button>
+                </form>
             </div>
         </div>
     </nav>
