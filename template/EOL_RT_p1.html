@@ -45,6 +45,23 @@
             </div>
         </div>
     </nav>
+    <ul class="nav nav-tabs" role="tablist" style="padding: 0rem 2rem;">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if request.GET.tab == 'ATE' or not request.GET.tab %}active{% endif %}" id="tab-smt" href="/eolrt_daily?tab=ATE" aria-selected="true" role="tab">ATE</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if request.GET.tab == 'OPT' %}active{% endif %}" id="tab-ict" href="/eolrt_daily?tab=OPT" aria-selected="true" role="tab" tabindex="-1">OPT</a>
+        </li>
+    </ul>  
+    <div class="container mt-4" style="padding-right: 3%;">
+        <div class="fig-container">
+            {% if placeholder_fig %}
+            {% autoescape off %}
+            {{ placeholder_fig|safe }}
+            {% endautoescape %}
+            {% endif %}
+        </div>
+    </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
