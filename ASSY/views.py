@@ -329,7 +329,7 @@ def daily(request):
             return render(request, 'ASSY_p1.html',context)
         
         # 若選擇非預設的日期
-        elif request.method == "POST" and 'assy_select_button' in request.POST:
+        elif request.method == "POST" and 'assy_select_button' in request.POST and 'assy_select1' in request.POST:
             select_day = request.POST.get("assy_select1")
             last_two_digits = nozero(select_day[-2:])
 
@@ -393,7 +393,7 @@ def weekly(request):
     try:
         global dash
         # 選擇別週
-        if request.method == "POST" and 'select_week' in request.POST and not dash.anyNone(dash.by_date):
+        if request.method == "POST" and 'select_week' in request.POST and 'assy_select2' in request.POST and not dash.anyNone(dash.by_date):
             select_week = request.POST.get("assy_select2")
             start = int(nozero(select_week[8:10])) # 該周的開始
             end = int(nozero(select_week[-2:])) # 該周的結束

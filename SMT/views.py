@@ -285,7 +285,7 @@ def daily(request):
             return render(request, 'SMT_p1.html',context)
         
         # 若選擇非預設的日期
-        elif request.method == "POST" and 'select_button' in request.POST:
+        elif request.method == "POST" and 'select_button' in request.POST and 'select1' in request.POST:
             select_day = request.POST.get("select1")
             last_two_digits = nozero(select_day[-2:])
 
@@ -351,7 +351,7 @@ def weekly(request):
     try:
         global dash
         # 選擇別週
-        if request.method == "POST" and 'select_week_button' in request.POST:
+        if request.method == "POST" and 'select_week_button' in request.POST and 'select2' in request.POST:
             select_week = request.POST.get("select2")
             start = int(nozero(select_week[8:10])) # 該周的開始
             end = int(nozero(select_week[-2:])) # 該周的結束
