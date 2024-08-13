@@ -12,7 +12,6 @@ import plotly.express as px
 from datetime import datetime, timedelta, date
 import requests
 import re
-from bs4 import BeautifulSoup
 from plotly.subplots import make_subplots
 
 # Create your views here.
@@ -46,6 +45,17 @@ test2_data = {
 test2_data['StdOutput'] = [0 if x is None else x for x in test2_data['StdOutput']]
 test2_data = pd.DataFrame(test2_data)
 test2_data['Performance'] = np.where(test2_data['StdOutput'] == 0, 0,  test2_data['Output'] / test2_data['StdOutput'])
+
+weekly_test = {
+    'Date':[5 , 6, 7, 8, 9],
+    'Target Qty':[45000, 34569, 30093, 28149, 35622],
+    'Output':[46026, 34867, 31093, 29149, 35002],
+    'RUN(HR)':[205.33, 206.73, 217.88, 233.82, 229.15],
+    'HOLD(MIN)':[66.0, 96.0, 60.0, 66.0, 102.0],
+    'IDEL(MIN)':[785.0, 719.0, 215.0, 195.0, 275.0]
+}
+weekly_test = pd.DataFrame(weekly_test)
+weekly_test['Efficiency'] =  weekly_test['Output'] / weekly_test['Target Qty']
 
 def func_for_pie(pie_data, title):
     labels = pie_data['labels'].tolist()
@@ -153,10 +163,7 @@ def weekly(request):
                 'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
                 'values': [996, 13, 21, 24, 4, 7, 18]
             }
-            dash.day = test2_data
-            dash.mass_production = dash.day[dash.day['WorkOrder'].str.startswith('1', na=False)]
-            dash.trial_production = dash.day[dash.day['WorkOrder'].str.startswith('3', na=False)]
-
+            dash.day = weekly_test
         else:
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 selected_date = request.POST.get("datePicker")
@@ -169,9 +176,7 @@ def weekly(request):
                 'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
                 'values': [985, 13, 21, 32, 4, 7, 58]
             }
-            dash.day = test_data
-            dash.mass_production = dash.day[dash.day['WorkOrder'].str.startswith('1', na=False)]
-            dash.trial_production = dash.day[dash.day['WorkOrder'].str.startswith('3', na=False)]
+            dash.day = weekly_test
 
         pie_data = pd.DataFrame(chart_data)
         placeholder_fig = func_for_pie(pie_data, title)
@@ -186,10 +191,6 @@ def weekly(request):
         'selected_tab': selected_tab,
         'all_data': dash.day.values.tolist(),
         'all_columns': dash.day.columns,
-        'mass_data': dash.mass_production.values.tolist(),
-        'mass_columns': dash.mass_production.columns,
-        'trial_data': dash.trial_production.values.tolist(),
-        'trial_columns': dash.trial_production.columns,
     }
     return render(request,'EOL_RT_p2.html', context)
 
@@ -199,14 +200,14 @@ def monthly(request):
         yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
         first_day_of_month = today.replace(day=1).strftime('%Y-%m-%d')
         selected_tab = request.POST.get('tab', request.GET.get('tab', 'ATE')) # POST:提交表單(go)中的hidden input, GET:只是點擊選項卡
-        if selected_tab == 'ICT':
+        if selected_tab == 'OPT':
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 start_date = request.POST.get("datePicker")
                 end_date = request.POST.get("EndPicker")
             else:   # 預設:當月第一天到昨天
                 start_date = first_day_of_month
                 end_date = yesterday
-            title = f"{start_date} ~ {end_date} EOL : ATE Production Time Distribution"
+            title = f"{start_date} ~ {end_date} EOL : OPT Production Time Distribution"
 
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
@@ -219,7 +220,7 @@ def monthly(request):
             else:   # 預設:當月第一天到昨天
                 start_date = first_day_of_month
                 end_date = yesterday
-            title = f"{start_date} ~ {end_date} EOL : OPT Production Time Distribution"
+            title = f"{start_date} ~ {end_date} EOL : ATE Production Time Distribution"
 
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
