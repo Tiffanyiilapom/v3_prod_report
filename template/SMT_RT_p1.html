@@ -44,12 +44,13 @@
                         <a class="nav-link large-font" href="/smtrt_monthly/" style="font-size: 1.1em;">自選期間</a>
                     </li>
                 </ul>
-                <form class="d-flex" method="POST" action="/smtrt_daily/">
+                <form class="d-flex" method="POST" action="/smtrt_daily/?tab={{ selected_tab }}">
                     {% csrf_token %}
+                    <input type="hidden" name="tab" value="{{ selected_tab }}">
                     <div style="padding: 0px 1.5px;">
-                        <input type="date" id="datePicker" name="date" class="form-control" style="width:200px;" max="{{ today }}">
+                        <input type="date" id="datePicker" name="datePicker" class="form-control" style="width:200px;" max="{{ yesterday }}">
                     </div>
-                    <button class="btn btn-secondary my-2 my-sm-0" type="submit" name="select_button">Go</button>
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit" name="date_button">Go</button>
                 </form>
             </div>
         </div>

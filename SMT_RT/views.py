@@ -44,19 +44,33 @@ def for_error(request):
 
 def daily(request):
     try:
-        selected_tab = request.GET.get('tab', 'SMT')
+        yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+        selected_tab = request.POST.get('tab', request.GET.get('tab', 'SMT')) # POST:提交表單(go)中的hidden input, GET:只是點擊選項卡
         if selected_tab == 'ICT':
+            if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
+                selected_date = request.POST.get("datePicker")
+                selected_date = datetime.strptime(selected_date, '%Y-%m-%d')
+                title = f"{selected_date.strftime('%Y-%m-%d')} SMT : ICT Production Time Distribution"
+            else:   # 預設:昨天
+                title = f"{yesterday} SMT : ICT Production Time Distribution"
+
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
                 'values': [996, 13, 21, 24, 4, 7, 18]
             }
-            title = '2024-08-12 SMT : ICT Production Time Distribution'
+
         else:
+            if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
+                selected_date = request.POST.get("datePicker")
+                selected_date = datetime.strptime(selected_date, '%Y-%m-%d')
+                title = f"{selected_date.strftime('%Y-%m-%d')} SMT : SMT Production Time Distribution"
+            else:   # 預設:昨天
+                title = f"{yesterday} SMT : SMT Production Time Distribution"
+
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
                 'values': [985, 13, 21, 32, 4, 7, 58]
             }
-            title = '2024-08-12 SMT : SMT Production Time Distribution'
 
         pie_data = pd.DataFrame(chart_data)
         placeholder_fig = func_for_pie(pie_data, title)
@@ -65,10 +79,10 @@ def daily(request):
         placeholder_fig = dash.placeholder_figure()
         placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
 
-    today = date.today().strftime('%Y-%m-%d')
     context = {
         'placeholder_fig': placeholder_fig,
-        'today':today,
+        'yesterday':yesterday,
+        'selected_tab': selected_tab,
     }
 
     return render(request, 'SMT_RT_p1.html', context)
