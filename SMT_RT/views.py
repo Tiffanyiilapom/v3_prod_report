@@ -63,6 +63,16 @@ def func_for_pie(pie_data, title):
     fig_html = pio.to_html(fig, full_html=False)
     return fig_html
 
+def get_week_dates(date_str):
+    selected_date = datetime.strptime(date_str, '%Y-%m-%d')
+    start_of_week = selected_date - timedelta(days=selected_date.weekday()) 
+    end_of_week = start_of_week + timedelta(days=6)
+
+    start_date_str = start_of_week.strftime('%Y-%m-%d')
+    end_date_str = end_of_week.strftime('%Y-%m-%d')
+    
+    return start_date_str, end_date_str
+
 def for_error(request):
     # 把舊的東西清掉!
     dash.data = None 
@@ -130,7 +140,61 @@ def daily(request):
 
     
 def weekly(request):
-    return render(request,'SMT_RT_p2.html')
+    #try:
+    yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+    selected_tab = request.POST.get('tab', request.GET.get('tab', 'SMT')) # POST:提交表單(go)中的hidden input, GET:只是點擊選項卡
+    if selected_tab == 'ICT':
+        if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
+            selected_date = request.POST.get("datePicker")
+            start_date, end_date = get_week_dates(selected_date)
+        else:   # 預設:昨天
+            start_date, end_date = get_week_dates(yesterday)
+        title = f"{start_date} ~ {end_date} SMT : ICT Production Time Distribution"
+
+        chart_data = {
+            'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
+            'values': [996, 13, 21, 24, 4, 7, 18]
+        }
+        dash.day = test2_data
+        dash.mass_production = dash.day[dash.day['WorkOrder'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['WorkOrder'].str.startswith('3', na=False)]
+
+    else:
+        if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
+            selected_date = request.POST.get("datePicker")
+            start_date, end_date = get_week_dates(selected_date)
+        else:   # 預設:昨天
+            start_date, end_date = get_week_dates(yesterday)
+        title = f"{start_date} ~ {end_date} SMT : ICT Production Time Distribution"
+
+        chart_data = {
+            'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
+            'values': [985, 13, 21, 32, 4, 7, 58]
+        }
+        dash.day = test_data
+        dash.mass_production = dash.day[dash.day['WorkOrder'].str.startswith('1', na=False)]
+        dash.trial_production = dash.day[dash.day['WorkOrder'].str.startswith('3', na=False)]
+
+    pie_data = pd.DataFrame(chart_data)
+    placeholder_fig = func_for_pie(pie_data, title)
+        
+    #except :
+    #    placeholder_fig = dash.placeholder_figure()
+    #    placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+    context = {
+        'placeholder_fig': placeholder_fig,
+        'yesterday':yesterday,
+        'selected_tab': selected_tab,
+        'all_data': dash.day.values.tolist(),
+        'all_columns': dash.day.columns,
+        'mass_data': dash.mass_production.values.tolist(),
+        'mass_columns': dash.mass_production.columns,
+        'trial_data': dash.trial_production.values.tolist(),
+        'trial_columns': dash.trial_production.columns,
+    }
+
+    return render(request,'SMT_RT_p2.html', context)
 
 def monthly(request):
     return render(request,'SMT_RT_p3.html')

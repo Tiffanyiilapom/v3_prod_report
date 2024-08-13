@@ -55,10 +55,10 @@
     </nav>
     <ul class="nav nav-tabs" role="tablist" style="padding: 0rem 2rem;">
         <li class="nav-item" role="presentation">
-            <a class="nav-link {% if request.GET.tab == 'SMT' or not request.GET.tab %}active{% endif %}" id="tab-smt" href="/smtrt_daily?tab=SMT" aria-selected="true" role="tab">SMT</a>
+            <a class="nav-link {% if request.GET.tab == 'SMT' or not request.GET.tab %}active{% endif %}" id="tab-smt" href="/smtrt_daily?tab=SMT" role="tab">SMT</a>
         </li>
         <li class="nav-item" role="presentation">
-            <a class="nav-link {% if request.GET.tab == 'ICT' %}active{% endif %}" id="tab-ict" href="/smtrt_daily?tab=ICT" aria-selected="true" role="tab" tabindex="-1">ICT</a>
+            <a class="nav-link {% if request.GET.tab == 'ICT' %}active{% endif %}" id="tab-ict" href="/smtrt_daily?tab=ICT" role="tab" tabindex="-1">ICT</a>
         </li>
     </ul>    
     <div class="container mt-4" style="padding-right: 3%;">
