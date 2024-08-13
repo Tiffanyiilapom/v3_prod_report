@@ -87,10 +87,10 @@ def daily(request):
         if selected_tab == 'OPT':
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 selected_date = request.POST.get("datePicker")
-                start_date, end_date = get_week_dates(selected_date)
+                selected_date = datetime.strptime(selected_date, '%Y-%m-%d')
+                title = f"{selected_date.strftime('%Y-%m-%d')} EOL : OPT Production Time Distribution"
             else:   # 預設:昨天
-                start_date, end_date = get_week_dates(yesterday)
-            title = f"{start_date} ~ {end_date} SMT : OPT Production Time Distribution"
+                title = f"{yesterday} EOL : OPT Production Time Distribution"
 
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
@@ -103,11 +103,10 @@ def daily(request):
         else:
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 selected_date = request.POST.get("datePicker")
-                start_date, end_date = get_week_dates(selected_date)
+                selected_date = datetime.strptime(selected_date, '%Y-%m-%d')
+                title = f"{selected_date.strftime('%Y-%m-%d')} EOL : ATE Production Time Distribution"
             else:   # 預設:昨天
-                start_date, end_date = get_week_dates(yesterday)
-            title = f"{start_date} ~ {end_date} SMT : ATE Production Time Distribution"
-
+                title = f"{yesterday} EOL : ATE Production Time Distribution"
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
                 'values': [985, 13, 21, 32, 4, 7, 58]
@@ -161,10 +160,10 @@ def weekly(request):
         else:
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 selected_date = request.POST.get("datePicker")
-                selected_date = datetime.strptime(selected_date, '%Y-%m-%d')
-                title = f"{selected_date.strftime('%Y-%m-%d')} EOL : ATE Production Time Distribution"
+                start_date, end_date = get_week_dates(selected_date)
             else:   # 預設:昨天
-                title = f"{yesterday} EOL : ATE Production Time Distribution"
+                start_date, end_date = get_week_dates(yesterday)
+            title = f"{start_date} ~ {end_date} SMT : ATE Production Time Distribution"
 
             chart_data = {
                 'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
@@ -192,7 +191,7 @@ def weekly(request):
         'trial_data': dash.trial_production.values.tolist(),
         'trial_columns': dash.trial_production.columns,
     }
-    return render(request,'EOL_RT_p2.html')
+    return render(request,'EOL_RT_p2.html', context)
 
 def monthly(request):
     return render(request,'EOL_RT_p3.html')
