@@ -194,4 +194,13 @@ def weekly(request):
     return render(request,'EOL_RT_p2.html', context)
 
 def monthly(request):
-    return render(request,'EOL_RT_p3.html')
+
+    placeholder_fig = dash.placeholder_figure()
+    placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+
+    context = {
+        'placeholder_fig': placeholder_fig,
+        'six_plot': placeholder_fig,
+    }
+
+    return render(request,'EOL_RT_p3.html', context)

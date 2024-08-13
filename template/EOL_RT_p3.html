@@ -20,7 +20,7 @@
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/eolrt_daily" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">SMT 生產報表 (from Real-Time Output)</a>
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="/smtrt_monthly" role="button" aria-haspopup="true" aria-expanded="false" style="font-size: 1.3em;">EOL 生產報表 (from Real-Time Output)</a>
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="/upload" style="font-size: 1.3em;">SMT 生產報表 (from Excel)</a>
                             <a class="dropdown-item" href="/smtrt_daily" style="font-size: 1.3em;">SMT 生產報表 (from Real-Time Output)</a>
@@ -39,13 +39,67 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active large-font" href="/eolrt_monthly/" style="font-size: 1.1em;">自選期間
-                            <span class="visually-hidden">(current)</span></a>
+                        <span class="visually-hidden">(current)</span></a>
                     </li>
                 </ul>
+                <form class="d-flex align-items-center gap-1" method="POST" action="/eolrt_monthly/?tab={{ selected_tab }}" onsubmit="return validateDates()">
+                    {% csrf_token %}
+                    <input type="hidden" name="tab" value="{{ selected_tab }}">
+                    <div style="padding: 0px 1.5px;">
+                        <input type="date" id="datePicker" name="datePicker" class="form-control" style="width:180px;" max="{{ yesterday }}">
+                    </div>
+                    <span class="mx-2" style="color: white;">to</span>
+                    <div style="padding: 0px 1.5px;">
+                        <input type="date" id="EndPicker" name="EndPicker" class="form-control" style="width:180px;" max="{{ yesterday }}">
+                    </div>
+                    <button class="btn btn-secondary my-2 my-sm-0" type="submit" name="date_button">Go</button>
+                </form>
             </div>
         </div>
     </nav>
+    <ul class="nav nav-tabs" role="tablist" style="padding: 0rem 2rem;">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if request.GET.tab == 'ATE' or not request.GET.tab %}active{% endif %}" id="tab-ate" href="/eolrt_monthly?tab=ATE" role="tab">ATE</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if request.GET.tab == 'OPT' %}active{% endif %}" id="tab-opt" href="/eolrt_monthly?tab=OPT" role="tab" tabindex="-1">OPT</a>
+        </li>
+    </ul>    
+    <div class="container mt-4" style="padding-right: 3%;">
+        <div class="fig-container">
+            {% if placeholder_fig %}
+            {% autoescape off %}
+            {{ placeholder_fig|safe }}
+            {% endautoescape %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="container mt-4" style="padding: 3.5%;">
+        <h4>當月各工作中心生產狀況</h3>
+        <div class="fig-container" style="display: flex; justify-content: center; align-items: center;">
+            {% if six_plot %}
+            {% autoescape off %}
+            {{ six_plot|safe }}
+            {% endautoescape %}
+            {% endif %}
+        </div>
+    </div>
 </body>
+</html>
+
+<script>
+    function validateDates() {
+        var startDate = document.getElementById('datePicker').value;
+        var endDate = document.getElementById('EndPicker').value;
+
+        if (startDate && endDate) {
+            if (new Date(startDate) > new Date(endDate)) {
+                alert("Start date cannot be later than end date!");
+                return false; // Prevent form submission
+            }
+        }
+        return true; // Allow form submission
+    }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
-</html>

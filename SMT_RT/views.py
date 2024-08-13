@@ -147,7 +147,7 @@ def weekly(request):
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 selected_date = request.POST.get("datePicker")
                 start_date, end_date = get_week_dates(selected_date)
-            else:   # 預設:昨天
+            else:   # 預設:昨天的那周
                 start_date, end_date = get_week_dates(yesterday)
             title = f"{start_date} ~ {end_date} SMT : ICT Production Time Distribution"
 
@@ -163,7 +163,7 @@ def weekly(request):
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
                 selected_date = request.POST.get("datePicker")
                 start_date, end_date = get_week_dates(selected_date)
-            else:   # 預設:昨天
+            else:   # 預設:昨天的那周
                 start_date, end_date = get_week_dates(yesterday)
             title = f"{start_date} ~ {end_date} SMT : ICT Production Time Distribution"
 
@@ -197,13 +197,50 @@ def weekly(request):
     return render(request,'SMT_RT_p2.html', context)
 
 def monthly(request):
+    try:
+        today = datetime.today()
+        yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+        first_day_of_month = today.replace(day=1).strftime('%Y-%m-%d')
+        selected_tab = request.POST.get('tab', request.GET.get('tab', 'SMT')) # POST:提交表單(go)中的hidden input, GET:只是點擊選項卡
+        if selected_tab == 'ICT':
+            if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
+                start_date = request.POST.get("datePicker")
+                end_date = request.POST.get("EndPicker")
+            else:   # 預設:當月第一天到昨天
+                start_date = first_day_of_month
+                end_date = yesterday
+            title = f"{start_date} ~ {end_date} SMT : ICT Production Time Distribution"
 
-    placeholder_fig = dash.placeholder_figure()
-    placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+            chart_data = {
+                'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
+                'values': [996, 13, 21, 24, 4, 7, 18]
+            }
+        else:
+            if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
+                start_date = request.POST.get("datePicker")
+                end_date = request.POST.get("EndPicker")
+            else:   # 預設:當月第一天到昨天
+                start_date = first_day_of_month
+                end_date = yesterday
+            title = f"{start_date} ~ {end_date} SMT : ICT Production Time Distribution"
 
+            chart_data = {
+                'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
+                'values': [985, 13, 21, 32, 4, 7, 58]
+            }
+
+        pie_data = pd.DataFrame(chart_data)
+        placeholder_fig = func_for_pie(pie_data, title)
+
+    except:
+        placeholder_fig = dash.placeholder_figure()
+        placeholder_fig = placeholder_fig.to_html(full_html=False, default_height=500, default_width=1200)
+    
     context = {
         'placeholder_fig': placeholder_fig,
-        'six_plot': placeholder_fig,
+        'six_plot': None,
+        'yesterday':yesterday,
+        'selected_tab': selected_tab,
     }
 
     return render(request,'SMT_RT_p3.html', context)

@@ -23,8 +23,6 @@ from EOL_RT import views as EOL_RT_views
 from ASSY import views as ASSY_views
 
 urlpatterns = [
-    
-    path('', SMT_views.upload, name="home"),  
     path('error/', SMT_views.for_error, name="error"),  
 
     # SMT
@@ -33,6 +31,7 @@ urlpatterns = [
     path('weekly/', SMT_views.weekly, name='weekly'),
     path('monthly/', SMT_views.monthly, name='monthly'),
 
+    path('', SMT_RT_views.daily, name="home"),  
     path('smtrt_daily/', SMT_RT_views.daily, name='smtrt_daily'),
     path('smtrt_weekly/', SMT_RT_views.weekly, name='smtrt_weekly'),
     path('smtrt_monthly/', SMT_RT_views.monthly, name='smtrt_monthly'),
