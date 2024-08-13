@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.0.0-beta5/dist/css/tempus-dominus.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.0.0-beta5/dist/js/tempus-dominus.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css">
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
@@ -72,8 +70,206 @@
             {% endif %}
         </div>
     </div>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked="checked">
+                <label class="btn btn-outline-primary" for="btnradio1" style="font-size: 1.1rem; padding: 0.7rem 1rem;">總表</label>
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio2" style="font-size: 1.1rem; padding: 0.7rem 1rem;">量產</label>
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio3" style="font-size: 1.1rem; padding: 0.7rem 1rem;">試產</label>
+            </div>
+            <div style="text-align: right;">
+                <button id="download_button" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.7rem 1rem;">Download Excel</button>
+            </div>
+        </div>
+        <hr>
+        <div id="data_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
+            <table id="datatable" name="datatable" class="table cell-border">
+                {% csrf_token %}
+                <thead>
+                    <tr>
+                        {% for col in all_columns %}
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
+                            {{ col }}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in all_data %}
+                    <tr>
+                        {% for cell in row %}
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="mass_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
+            <table id="table_mass" name="table_mass" class="table cell-border">
+                {% csrf_token %}
+                <thead>
+                    <tr>
+                        {% for col in mass_columns %}
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
+                            {{ col }}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in mass_data %}
+                    <tr>
+                        {% for cell in row %}
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="trial_container" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
+            <table id="table_trial" name="table_trial" class="table cell-border">
+                {% csrf_token %}
+                <thead>
+                    <tr>
+                        {% for col in trial_columns %}
+                        <th scope="col" style="font-family: 'Times New Roman', Times, monospace; font-size: 16px; text-align: center;">
+                            {{ col }}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in trial_data %}
+                    <tr>
+                        {% for cell in row %}
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;">{{cell}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>           
+        </div>
+    </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#mass_container').hide();
+        $('#trial_container').hide();
+        
+        $('#datatable').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50]});
 
+        $('#btnradio1').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#data_container').show();
+                $('#mass_container').hide();
+                $('#trial_container').hide();
+            }
+        });
+
+        $('#btnradio2').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#mass_container').show();
+                $('#data_container').hide();
+                $('#trial_container').hide();
+                if (!$.fn.DataTable.isDataTable('#table_mass')) {
+                    $('#table_mass').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50]});
+                }
+            }
+        });
+
+        $('#btnradio3').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#trial_container').show();
+                $('#data_container').hide();
+                $('#mass_container').hide();
+                if (!$.fn.DataTable.isDataTable('#table_trial')) {
+                    $('#table_trial').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50]});
+                }
+            }
+        });
+    });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script>
+    document.getElementById("download_button").addEventListener("click", function () {
+        let selectedRadio = document.querySelector('input[name="btnradio"]:checked');
+        let tableId = '';
+        let sheetName = '';
+
+        if (selectedRadio.id === 'btnradio1') {
+            tableId = 'datatable';
+            sheetName = '總表';
+        } else if (selectedRadio.id === 'btnradio2') {
+            tableId = 'table_mass';
+            sheetName = '量產';
+        } else if (selectedRadio.id === 'btnradio3') {
+            tableId = 'table_trial';
+            sheetName = '試產';
+        } else {
+            alert('No table selected.');
+            return;
+        }
+
+        let table = document.getElementById(tableId);
+        let rows = table.getElementsByTagName("tr");
+
+        let headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+        let headerCells = headerRow.getElementsByTagName("th");
+
+        let data = [];
+        let headerContent = [];
+
+        for (let j = 0; j < headerCells.length; j++) {
+            headerContent.push(headerCells[j].innerText);
+        }
+        data.push(headerContent);
+
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let rowContent = [];
+            for (let j = 0; j < cells.length; j++) {
+                rowContent.push(cells[j].innerText);
+            }
+            data.push(rowContent);
+        }
+
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.aoa_to_sheet(data);
+
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+        XLSX.writeFile(wb, "download.xlsx");
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var columnCount = document.getElementById("datatable").getElementsByTagName("th").length;
+        var lastColumnIndex = columnCount;
+
+        const percentCells = document.querySelectorAll(`table tbody tr td:nth-child(${lastColumnIndex}), table tr:last-child td:nth-child(${lastColumnIndex})`);
+        percentCells.forEach(cell => {
+            let value = parseFloat(cell.textContent);
+            if (!isNaN(value)) { // Ensure value is a number
+                let formattedValue = (value * 100).toFixed(2) + "%";
+                cell.textContent = formattedValue;
+                cell.classList.add('right-align');
+                
+                if (value < 1) { 
+                    cell.classList.add("low-percent");
+                    const row = cell.parentElement;
+                    row.classList.add("highlight-row");
+                }
+            }
+        });
+    });
+</script>
 </html>

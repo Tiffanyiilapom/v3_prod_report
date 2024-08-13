@@ -19,6 +19,36 @@ from plotly.subplots import make_subplots
 
 dash = My_Dash()
 
+test_data = {
+    'Machine':['L01','L01','L04'],
+    'WorkOrder':['130000021577','130000021578','130000021594'],
+    'Product No':['TR-MC4209-D','TR-MC4210-D','TR-MC4142-E'],
+    'Product Name':['20_SAE_C1YC_2 HL BASE,LED,3F,LH','20_SAE_C1YC_2 HL BASE,LED,3F,RH','22_Volta RPV SAE,Module,SL/R-T,LR'],
+    'WorkCenter':['SMT','SMT','SMT-BOT'],
+    'StartTime':['07:00','13:00','8:00'],
+    'EndTime':['13:00','24:00','24:00'],
+    'Target Qty':[516, 880, 2352],
+    'AOI Output':[285, 462, 1880],
+    'SPI Output':[289, 478, 1912]
+}
+test_data = pd.DataFrame(test_data)
+test_data['Performance'] =  test_data['AOI Output'] / test_data['Target Qty']
+
+
+test2_data = {
+    'Machine':['ICT03','ICT03','ICT04','ICT01'],
+    'WorkOrder':['130000021455','130000021456','130000021560','360000001475'],
+    'Product No':['TR-MC4238-L','TR-MC4245-L','TR-MC4276-J','TR-MC4179-A'],
+    'Product Name':['20_C1YC_2 RCL BASE SAE,LDM,3F,LH','20_C1YC_2 RCL BASE SAE,LDM,3F,RH', '20_Porsche,Module,TL,RH', '20_T1xGH MCM,LED,LED,3F_PCB2,LH'],
+    'StartTime':['08:00','11:00','12:00','13:00'],
+    'EndTime':['09:00','12:00','13:00','14:00'],
+    'Target Qty':[109, 109, 300, 348],
+    'Output':[1, 1, 2, 1]
+}
+test2_data = pd.DataFrame(test2_data)
+test2_data['Performance'] =  test2_data['Output'] / test2_data['Target Qty']
+
+
 def func_for_pie(pie_data, title):
     labels = pie_data['labels'].tolist()
     values = pie_data['values'].tolist()
@@ -37,7 +67,6 @@ def for_error(request):
     # 把舊的東西清掉!
     dash.data = None 
     dash.by_date = None 
-    dash.day = None 
     dash.sixplot_html = None 
     dash.flag = False 
     return render(request, "ERROR_Page.html")
@@ -58,6 +87,9 @@ def daily(request):
                 'labels': ['RUN', 'FAI', 'IDLE', 'ENG', 'DOWN', 'PM', 'HOLD_M'],
                 'values': [996, 13, 21, 24, 4, 7, 18]
             }
+            dash.day = test2_data
+            dash.mass_production = dash.day[dash.day['WorkOrder'].str.startswith('1', na=False)]
+            dash.trial_production = dash.day[dash.day['WorkOrder'].str.startswith('3', na=False)]
 
         else:
             if request.method == "POST" and 'date_button' in request.POST and 'datePicker' in request.POST:
@@ -71,6 +103,9 @@ def daily(request):
                 'labels': ['RUN', 'FAI', 'IDLE', 'WAIT_M', 'FAC', 'PM', 'HOLD_M'],
                 'values': [985, 13, 21, 32, 4, 7, 58]
             }
+            dash.day = test_data
+            dash.mass_production = dash.day[dash.day['WorkOrder'].str.startswith('1', na=False)]
+            dash.trial_production = dash.day[dash.day['WorkOrder'].str.startswith('3', na=False)]
 
         pie_data = pd.DataFrame(chart_data)
         placeholder_fig = func_for_pie(pie_data, title)
@@ -83,6 +118,12 @@ def daily(request):
         'placeholder_fig': placeholder_fig,
         'yesterday':yesterday,
         'selected_tab': selected_tab,
+        'all_data': dash.day.values.tolist(),
+        'all_columns': dash.day.columns,
+        'mass_data': dash.mass_production.values.tolist(),
+        'mass_columns': dash.mass_production.columns,
+        'trial_data': dash.trial_production.values.tolist(),
+        'trial_columns': dash.trial_production.columns,
     }
 
     return render(request, 'SMT_RT_p1.html', context)

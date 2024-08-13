@@ -8,7 +8,7 @@ class My_Dash():
         self.data = None # 整個活頁簿
         self.by_date = None # (sheet:SMT_BY日期總表) 給圓餅圖用
 
-        self.day = None # 給每日的下方表格 總表
+        self.day = None
         self.mass_production = None # 量產
         self.trial_production = None # 試產
 
