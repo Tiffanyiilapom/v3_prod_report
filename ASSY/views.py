@@ -531,13 +531,6 @@ def monthly(request):
                             df['ActManHour'] = df['ActManHour'].astype(float)
                             df['StdManHour'] = df['StdManHour'].astype(float)
 
-                            # 合併 ASSY-COB 和 ASSY-COT 到 ASSY-CO
-                            mapping = {
-                                'ASSY-COB': 'ASSY-CO',
-                                'ASSY-COT': 'ASSY-CO'
-                            }
-                            df['WorkCenter'] = df['WorkCenter'].replace(mapping)
-
                             df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
                             grouped_df = pd.concat([grouped_df, df], axis=0)
                 except requests.exceptions.RequestException as e:
