@@ -127,6 +127,90 @@ def find_date_ranges(dates):
     result.append(f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}")
     return result
 
+def week_web_crawler(start_date, end_date):
+    base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
+    site = '1010'
+    workcenter = 'SMT'    
+    work_centers = set()
+    
+    for day in range(start_date, end_date + 1):
+        query_date = "202408" + f'{day:02d}'
+        params = {
+            'site': site,
+            'querymonth': query_date,
+            'workcenter': workcenter
+        }
+        
+        try:
+            response = requests.get(base_url, params=params)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                table = soup.find('table')
+                if table:
+                    headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
+                    
+                    if 'WorkCenter' in headers:
+                        workcenter_index = headers.index('WorkCenter')
+                    
+                        for row in table.find_all('tr'):
+                            cells = row.find_all('td')
+                            if cells:
+                                work_center_value = cells[workcenter_index].text.strip()
+                                if work_center_value:  
+                                    work_centers.add(work_center_value)
+        except requests.exceptions.RequestException as e:
+            continue
+    
+    work_centers = list(work_centers)
+    base_url_wolist_details = 'http://c1eip01:8081/TimeReportStatus/WoListDetails'
+    grouped_df = pd.DataFrame()
+    
+    for workcenter in work_centers:
+        for day in range(start_date, end_date + 1):
+            query_date = f'202408{day:02d}'  
+            if workcenter == "SMT":
+                workcenter_param = workcenter + "%20" * 5
+            else:
+                workcenter_param = workcenter + "%20"
+            
+            query_string = f'site={site}&querymonth={query_date}&workcenter={workcenter_param}'
+            url = f"{base_url_wolist_details}?{query_string}"
+            
+            try:
+                response_wolist_details = requests.get(url)
+                if response_wolist_details.status_code == 200:
+                    soup_wolist_details = BeautifulSoup(response_wolist_details.text, 'html.parser')
+                    details_table = soup_wolist_details.find('table')
+                    if details_table:
+                        details_headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in details_table.find_all('th')]
+                        details_rows = []
+                        for row in details_table.find_all('tr'):
+                            cells = row.find_all('td')
+                            row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
+                            if row_data:  
+                                details_rows.append(row_data)
+                        df_details = pd.DataFrame(details_rows, columns=details_headers, index=None)
+                        df_details = df_details.iloc[:-1]  # Exclude last row if necessary
+                        grouped_df = pd.concat([grouped_df, df_details], axis=0)
+            except requests.exceptions.RequestException as e:
+                print(f"Request failed for {query_date} in workcenter {workcenter}: {e}")
+                continue
+    
+    if grouped_df.empty:
+        filtered_df = []
+    else:
+        grouped_df['StdManHour'] = pd.to_numeric(grouped_df['StdManHour'], errors='coerce')
+        grouped_df['ActManHour'] = pd.to_numeric(grouped_df['ActManHour'], errors='coerce')
+        
+        grouped_df = grouped_df.iloc[:-1]
+        grouped_df = grouped_df.iloc[:, :-1]
+        grouped_df['Std/Act'] = grouped_df['StdManHour'] / grouped_df['ActManHour']
+        
+        filtered_df = grouped_df[grouped_df['Std/Act'] < 0.95]
+        filtered_df['PostDate'] = pd.to_datetime(filtered_df['PostDate'], format='%Y%m%d').dt.strftime('%Y/%m/%d')
+        filtered_df = filtered_df.reset_index(drop=True)
+        return filtered_df
+
 # 去首0
 def nozero(str):
     if str.startswith('0'):
@@ -367,51 +451,7 @@ def weekly(request):
             # 報工爬蟲
             start_date = int(select_week[8:10])
             end_date = int(select_week[-2:])
-            base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
-            site = '1010'
-            workcenter = 'SMT'
-            head = pd.to_datetime(select_week[0:7]).strftime('%Y%m')
-            grouped_df = pd.DataFrame()
-
-            for day in range(start_date, end_date+1):
-                query_date = head+f'{day:02d}'
-                params = {
-                    'site': site,
-                    'querymonth': query_date,
-                    'workcenter': workcenter
-                }
-
-                try:
-                    url = requests.get(base_url, params=params)
-                    if url.status_code == 200:
-                        soup = BeautifulSoup(url.text, 'html.parser')
-                        table = soup.find('table')
-                        if table:
-                            headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
-                            rows = []
-                            for row in table.find_all('tr'):
-                                cells = row.find_all('td')
-                                row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
-                                if row_data:  
-                                    rows.append(row_data)
-                            df = pd.DataFrame(rows, columns=headers, index=None)
-                            df = df.iloc[:-1]
-                            df = df.iloc[:, :-1]
-                            df = df.drop('WorkOrderType', axis=1)
-                            df['PostDate'] = pd.to_datetime(df['PostDate'], format='%Y%m%d').dt.strftime('%Y-%m-%d')
-                            df['ActManHour'] = df['ActManHour'].astype(float)
-                            df['StdManHour'] = df['StdManHour'].astype(float)
-                            df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
-                            grouped_df = pd.concat([grouped_df, df], axis=0)
-                except requests.exceptions.RequestException as e:
-                    continue
-
-            if grouped_df.empty:  # 若報工平台尚無該月資料 e.g. 8/2時報工可能只到7/31
-                dash.filtered = []
-            else:
-                grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
-                grouped_df = grouped_df.fillna(" ")
-                dash.filtered = grouped_df[grouped_df['Std/Act'] < 0.95]
+            dash.filtered = week_web_crawler(start_date, end_date)
             
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
@@ -448,6 +488,11 @@ def weekly(request):
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
 
+            # 報工爬蟲
+            start_date = int(select_week[8:10])
+            end_date = int(select_week[-2:])
+            dash.filtered = week_web_crawler(start_date, end_date)
+
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
             title = select_week +' SMT Production Time Distribution'
@@ -458,6 +503,8 @@ def weekly(request):
                 'columns': dash.week.columns,
                 'placeholder_fig': dash.fig_forweek,
                 'options': dash.weekly_options,
+                'work_data':dash.filtered.values.tolist(),
+                'work_columns':dash.filtered.columns,
             }
             
             return render(request, 'SMT_p2.html',context)
@@ -471,8 +518,6 @@ def weekly(request):
                 'data': placeholder_df.values.tolist(),
                 'columns': placeholder_df.columns,
                 'placeholder_fig': placeholder_fig,
-                
-
             }
             return render(request, 'SMT_p2.html',context)
     #except:

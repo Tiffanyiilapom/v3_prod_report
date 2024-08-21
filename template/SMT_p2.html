@@ -105,7 +105,7 @@
                     <button id="download_button" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.7rem 1rem;">Download Excel</button>
                 </div>
             </div>
-            <table id="worktable" name="worktable" class="table cell-border" style="text-align: left; width: 100%;">
+            <table id="worktable" name="worktable" class="table cell-border">
                 {% csrf_token %}
                 <thead>
                     <tr>
@@ -118,7 +118,7 @@
                     {% for row in work_data %}
                     <tr>
                         {% for cell in row %}
-                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;text-align: center;">{{cell}}</td>
+                        <td style="font-family: 'Times New Roman', Times, monospace; font-size: 16px;text-align: right;">{{cell}}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
@@ -170,7 +170,7 @@
     });
 
     $(document).ready(function() {
-        $('#worktable').DataTable({"paging": false, searching: false, scrollX: true, "columnDefs": [{"targets": [0, 1],"type": "string"}]})
+        $('#worktable').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50, 100, 200, 500]});
     });
 </script>
 
