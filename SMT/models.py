@@ -18,6 +18,7 @@ class My_Dash():
         self.week = None # 給每周的下方表格
         self.weekly_options = None # 保存周別選單
         self.fig_forweek = None # 保存每周的圓餅圖
+        self.filtered = None
 
         self.fig_formonth = None # 保存每月的圓餅圖
         self.sixplot_html = None # 保存每月的六工作站點效率圖

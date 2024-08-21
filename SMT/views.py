@@ -347,7 +347,7 @@ def daily(request):
 
 
 def weekly(request):
-    try:
+    #try:
         global dash
         # 選擇別週
         if request.method == "POST" and 'select_week_button' in request.POST and 'select2' in request.POST:
@@ -364,6 +364,55 @@ def weekly(request):
             week_data ['稼動率'] = week_data ['稼動時間        Run（H）'].astype(float)/week_data ['計畫投產工時\n(Hrs)'].astype(float)
             dash.week = process_date(week_data)
 
+            # 報工爬蟲
+            start_date = int(select_week[8:10])
+            end_date = int(select_week[-2:])
+            base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
+            site = '1010'
+            workcenter = 'SMT'
+            head = pd.to_datetime(select_week[0:7]).strftime('%Y%m')
+            grouped_df = pd.DataFrame()
+
+            for day in range(start_date, end_date+1):
+                query_date = head+f'{day:02d}'
+                params = {
+                    'site': site,
+                    'querymonth': query_date,
+                    'workcenter': workcenter
+                }
+
+                try:
+                    url = requests.get(base_url, params=params)
+                    if url.status_code == 200:
+                        soup = BeautifulSoup(url.text, 'html.parser')
+                        table = soup.find('table')
+                        if table:
+                            headers = [header.text.strip().replace('\r', '').replace('\n', '') for header in table.find_all('th')]
+                            rows = []
+                            for row in table.find_all('tr'):
+                                cells = row.find_all('td')
+                                row_data = [cell.text.strip().replace('\r', '').replace('\n', '') for cell in cells]
+                                if row_data:  
+                                    rows.append(row_data)
+                            df = pd.DataFrame(rows, columns=headers, index=None)
+                            df = df.iloc[:-1]
+                            df = df.iloc[:, :-1]
+                            df = df.drop('WorkOrderType', axis=1)
+                            df['PostDate'] = pd.to_datetime(df['PostDate'], format='%Y%m%d').dt.strftime('%Y-%m-%d')
+                            df['ActManHour'] = df['ActManHour'].astype(float)
+                            df['StdManHour'] = df['StdManHour'].astype(float)
+                            df = df.groupby(['PostDate', 'WorkCenter']).sum().reset_index()
+                            grouped_df = pd.concat([grouped_df, df], axis=0)
+                except requests.exceptions.RequestException as e:
+                    continue
+
+            if grouped_df.empty:  # 若報工平台尚無該月資料 e.g. 8/2時報工可能只到7/31
+                dash.filtered = []
+            else:
+                grouped_df['Std/Act'] = grouped_df['StdManHour']/grouped_df['ActManHour']
+                grouped_df = grouped_df.fillna(" ")
+                dash.filtered = grouped_df[grouped_df['Std/Act'] < 0.95]
+            
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
             title = select_week +' SMT Production Time Distribution'
@@ -374,6 +423,8 @@ def weekly(request):
                 'columns': dash.week.columns,
                 'placeholder_fig': dash.fig_forweek,
                 'options': dash.weekly_options,
+                'work_data':dash.filtered.values.tolist(),
+                'work_columns':dash.filtered.columns,
             }
 
             return render(request, 'SMT_p2.html',context)
@@ -420,11 +471,13 @@ def weekly(request):
                 'data': placeholder_df.values.tolist(),
                 'columns': placeholder_df.columns,
                 'placeholder_fig': placeholder_fig,
+                
+
             }
             return render(request, 'SMT_p2.html',context)
-    except:
-        for_error(request)
-        return render(request, 'ERROR_Page.html')
+    #except:
+        #for_error(request)
+        #return render(request, 'ERROR_Page.html')
 
 def monthly(request):
     try:
