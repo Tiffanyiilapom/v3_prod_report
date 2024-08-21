@@ -127,14 +127,17 @@ def find_date_ranges(dates):
     result.append(f"{start_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')}")
     return result
 
-def week_web_crawler(start_date, end_date):
+def week_web_crawler(select_week):
+    start_date = int(select_week[8:10])
+    end_date = int(select_week[-2:])
+    yearmonth = select_week[0:7].replace('-', '')
     base_url = 'http://c1eip01:8081/TimeReportStatus/DayDetails'
     site = '1010'
     workcenter = 'SMT'    
     work_centers = set()
     
     for day in range(start_date, end_date + 1):
-        query_date = "202408" + f'{day:02d}'
+        query_date = f'{yearmonth}{day:02d}'
         params = {
             'site': site,
             'querymonth': query_date,
@@ -167,7 +170,7 @@ def week_web_crawler(start_date, end_date):
     
     for workcenter in work_centers:
         for day in range(start_date, end_date + 1):
-            query_date = f'202408{day:02d}'  
+            query_date = f'{yearmonth}{day:02d}'  
             if workcenter == "SMT":
                 workcenter_param = workcenter + "%20" * 5
             else:
@@ -190,7 +193,7 @@ def week_web_crawler(start_date, end_date):
                             if row_data:  
                                 details_rows.append(row_data)
                         df_details = pd.DataFrame(details_rows, columns=details_headers, index=None)
-                        df_details = df_details.iloc[:-1]  # Exclude last row if necessary
+                        df_details = df_details.iloc[:-1]  
                         grouped_df = pd.concat([grouped_df, df_details], axis=0)
             except requests.exceptions.RequestException as e:
                 print(f"Request failed for {query_date} in workcenter {workcenter}: {e}")
@@ -206,7 +209,7 @@ def week_web_crawler(start_date, end_date):
         grouped_df = grouped_df.iloc[:, :-1]
         grouped_df['Std/Act'] = grouped_df['StdManHour'] / grouped_df['ActManHour']
         
-        filtered_df = grouped_df[grouped_df['Std/Act'] < 0.95]
+        filtered_df = grouped_df[grouped_df['Std/Act'] < 0.95].copy()
         filtered_df['PostDate'] = pd.to_datetime(filtered_df['PostDate'], format='%Y%m%d').dt.strftime('%Y/%m/%d')
         filtered_df = filtered_df.reset_index(drop=True)
         return filtered_df
@@ -449,9 +452,7 @@ def weekly(request):
             dash.week = process_date(week_data)
 
             # 報工爬蟲
-            start_date = int(select_week[8:10])
-            end_date = int(select_week[-2:])
-            dash.filtered = week_web_crawler(start_date, end_date)
+            dash.filtered = week_web_crawler(select_week)
             
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
@@ -489,9 +490,7 @@ def weekly(request):
             dash.week = process_date(week_data)
 
             # 報工爬蟲
-            start_date = int(select_week[8:10])
-            end_date = int(select_week[-2:])
-            dash.filtered = week_web_crawler(start_date, end_date)
+            dash.filtered = week_web_crawler(select_week)
 
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
