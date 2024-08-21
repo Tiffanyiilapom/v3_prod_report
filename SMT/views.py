@@ -434,7 +434,7 @@ def daily(request):
 
 
 def weekly(request):
-    #try:
+    try:
         global dash
         # 選擇別週
         if request.method == "POST" and 'select_week_button' in request.POST and 'select2' in request.POST:
@@ -519,9 +519,9 @@ def weekly(request):
                 'placeholder_fig': placeholder_fig,
             }
             return render(request, 'SMT_p2.html',context)
-    #except:
-        #for_error(request)
-        #return render(request, 'ERROR_Page.html')
+    except:
+        for_error(request)
+        return render(request, 'ERROR_Page.html')
 
 def monthly(request):
     try:
