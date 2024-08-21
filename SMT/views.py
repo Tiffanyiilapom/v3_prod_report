@@ -128,6 +128,7 @@ def find_date_ranges(dates):
     return result
 
 def week_web_crawler(select_week):
+    filtered_df = pd.DataFrame(columns=["No", "work" ,"report data", "found","This is usually because", "personnel did not", "report work", "during this period"])
     start_date = int(select_week[8:10])
     end_date = int(select_week[-2:])
     yearmonth = select_week[0:7].replace('-', '')
@@ -163,6 +164,9 @@ def week_web_crawler(select_week):
                                     work_centers.add(work_center_value)
         except requests.exceptions.RequestException as e:
             continue
+    
+    if not work_centers:
+        return filtered_df
     
     work_centers = list(work_centers)
     base_url_wolist_details = 'http://c1eip01:8081/TimeReportStatus/WoListDetails'
@@ -458,6 +462,20 @@ def weekly(request):
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
             title = select_week +' SMT Production Time Distribution'
             dash.fig_forweek = func_for_pie(pie_data, title)
+
+            context = {
+                'data': dash.week.values.tolist(),
+                'columns': dash.week.columns,
+                'placeholder_fig': dash.fig_forweek,
+                'options': dash.weekly_options,
+                'work_data':dash.filtered.values.tolist(),
+                'work_columns':dash.filtered.columns,
+            }
+
+            return render(request, 'SMT_p2.html',context)
+        
+         # 從別頁點回來
+        elif not dash.anyNone(dash.week, dash.filtered, dash.fig_forweek) :
 
             context = {
                 'data': dash.week.values.tolist(),

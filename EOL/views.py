@@ -57,6 +57,7 @@ def clean_time_format(time_str):
     return time_str if len(time_str) == 5 else time_str[:-3]
 
 def week_web_crawler(select_week):
+    filtered_df = pd.DataFrame(columns=["No", "work" ,"report data", "found","This is usually because", "personnel did not", "report work", "during this period"])
     start_date = int(select_week[8:10])
     end_date = int(select_week[-2:])
     yearmonth = select_week[0:7].replace('-', '')
@@ -93,6 +94,9 @@ def week_web_crawler(select_week):
         except requests.exceptions.RequestException as e:
             continue
     
+    if not work_centers:
+        return filtered_df
+
     work_centers = list(work_centers)
     base_url_wolist_details = 'http://c1eip01:8081/TimeReportStatus/WoListDetails'
     grouped_df = pd.DataFrame()
@@ -128,9 +132,7 @@ def week_web_crawler(select_week):
                 print(f"Request failed for {query_date} in workcenter {workcenter}: {e}")
                 continue
     
-    if grouped_df.empty:
-        filtered_df = []
-    else:
+    if not grouped_df.empty:
         grouped_df['StdManHour'] = pd.to_numeric(grouped_df['StdManHour'], errors='coerce')
         grouped_df['ActManHour'] = pd.to_numeric(grouped_df['ActManHour'], errors='coerce')
         
@@ -434,7 +436,7 @@ def daily(request):
     
 
 def weekly(request):
-    try:
+    #try:
         global dash
         # 選擇別週
         if request.method == "POST" and 'select_week' in request.POST and 'eol_select2' in request.POST and not dash.anyNone(dash.by_date):
@@ -453,12 +455,27 @@ def weekly(request):
 
             # 報工爬蟲
             dash.filtered = week_web_crawler(select_week)
+            print(dash.filtered)
 
             # 圓餅圖資料
             pie_data = dash.by_date[dash.by_date['日期'].isin(dates)]
             title = select_week +' EOL Production Time Distribution'
             dash.fig_forweek = func_for_pie(pie_data, title)
 
+            context = {
+                'data': dash.week.values.tolist(),
+                'columns': dash.week.columns,
+                'placeholder_fig': dash.fig_forweek,
+                'options': dash.weekly_options,
+                'work_data':dash.filtered.values.tolist() if dash.filtered is not None else [],
+                'work_columns':dash.filtered.columns if dash.filtered is not None else [],
+            }
+
+            return render(request, 'EOL_p2.html',context)
+        
+        # 從別頁點回來
+        elif not dash.anyNone(dash.week, dash.filtered, dash.fig_forweek) : 
+            
             context = {
                 'data': dash.week.values.tolist(),
                 'columns': dash.week.columns,
@@ -519,9 +536,9 @@ def weekly(request):
                 'placeholder_fig': placeholder_fig,
             }
             return render(request, 'EOL_p2.html',context)
-    except:
-        for_error(request)
-        return render(request, 'ERROR_Page.html')
+    #except:
+        #for_error(request)
+        #return render(request, 'ERROR_Page.html')
     
 def monthly(request):
     try:
