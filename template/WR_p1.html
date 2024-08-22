@@ -48,6 +48,7 @@
         <div id="data_container2" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 style="text-align:left">{{formatted_date}} 生產效率低於 {{formatted_threshold}} 之數據</h4>
+                <input type="hidden" id="threshold" value="{{ threshold }}">
                 <div style="text-align: right;">
                     <button id="download_button" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.7rem 1rem;">Download Excel</button>
                 </div>
@@ -106,7 +107,7 @@
         // Create a new workbook and add the sheet
         let wb = XLSX.utils.book_new();
         let ws = XLSX.utils.aoa_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, 'weekly_efficiency'); // 'Sheet1' can be changed to any desired sheet name
+        XLSX.utils.book_append_sheet(wb, ws, 'weekly_efficiency'); 
 
         // Write the file
         XLSX.writeFile(wb, "download.xlsx");
@@ -122,6 +123,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const tableId2 = "worktable"; 
         const table2 = document.getElementById(tableId2);
+        const thres = parseFloat(document.getElementById("threshold").value);
         
         if (table2) {
             const columnCount2 = table2.getElementsByTagName("th").length;
@@ -134,7 +136,7 @@
                     const value = parseFloat(cell.textContent);
                     cell.textContent = (value * 100).toFixed(2) + "%";
 
-                    if (index === columnCount2 && value < 0.9) {
+                    if (index === columnCount2 && value < thres-0.05) {
                         cell.classList.add("low-percent");
                         const row = cell.parentElement;
                         row.classList.add("highlight-row");

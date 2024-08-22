@@ -181,8 +181,8 @@ def output(request):
     end = request.POST.get("EndPicker")
     formatted_date = start + " ~ " + end 
     threshold = request.POST.get("customerRange")
-    threshold_value = round(float(threshold) * 100)
-    formatted_threshold = f"{threshold_value}%"
+    threshold_value = float(threshold)
+    formatted_threshold = f"{round(threshold_value*100)}%"
 
     dash.filtered, fig_sub = week_web_crawler(type, start, end, threshold) 
 
@@ -192,6 +192,7 @@ def output(request):
         'placeholder_fig':fig_sub,
         'work_data' : dash.filtered.values.tolist(),
         'work_columns':dash.filtered.columns,
+        'threshold':threshold_value,
     }
 
     return render(request, 'WR_p1.html', context)
