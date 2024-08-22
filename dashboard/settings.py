@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'SMT',
     'EOL',
     'ASSY',
+    'WR',
 ]
 
 MIDDLEWARE = [
