@@ -21,6 +21,7 @@ from SMT_RT import views as SMT_RT_views
 from EOL import views as EOL_views 
 from EOL_RT import views as EOL_RT_views
 from ASSY import views as ASSY_views
+from WR import views as WR_views
 
 urlpatterns = [
     path('error/', SMT_views.for_error, name="error"),  
@@ -51,5 +52,9 @@ urlpatterns = [
     path('assy_daily/', ASSY_views.daily, name='assy_daily'),
     path('assy_weekly/', ASSY_views.weekly, name='assy_weekly'),
     path('assy_monthly/', ASSY_views.monthly, name='assy_monthly'),
+
+    #WR
+    path('WR_input/', WR_views.input, name='WR_input'),
+    path('WR_output/', WR_views.output, name='WR_output'),
 
 ]
