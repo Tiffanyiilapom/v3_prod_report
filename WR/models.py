@@ -6,26 +6,10 @@ import io
 # Create your models here.
 class My_Dash():
     def __init__(self):
-        self.data = None # 整個活頁簿
-        self.by_date = None # (sheet:SMT_BY日期總表) 給圓餅圖用
-
-        self.day = None # 給每日的下方表格 總表
-        self.mass_production = None # 量產
-        self.trial_production = None # 試產
-
-        self.fig_fordaily = None # 保存每日的圓餅圖
-        self.options = None # 保存日期選單
-
-        self.week = None # 給每周的下方表格
-        self.weekly_options = None # 保存周別選單
-        self.fig_forweek = None # 保存每周的圓餅圖
+        self.text = None 
+        self.fig_sub = None 
         self.filtered = None
-
-        self.fig_formonth = None # 保存每月的圓餅圖
-        self.sixplot_html = None # 保存每月的六工作站點效率圖
-        self.flag = False # 用來判斷是不是有重新上傳其他月份
         
-    
     def anyNone(self, *args):
         for i in args:
             if i is None:

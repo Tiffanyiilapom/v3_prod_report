@@ -176,23 +176,42 @@ def input(request):
     return render(request, 'WR_p0.html',context)
 
 def output(request):
-    type = request.POST.get("typeSelect")
-    start = request.POST.get("datePicker")
-    end = request.POST.get("EndPicker")
-    formatted_date = start + " ~ " + end 
-    threshold = request.POST.get("customerRange")
-    threshold_value = float(threshold)
-    formatted_threshold = f"{round(threshold_value*100)}%"
 
-    dash.filtered, fig_sub = week_web_crawler(type, start, end, threshold) 
+    if not dash.anyNone(dash.filtered):
 
-    context = {
-        'formatted_threshold':formatted_threshold,
-        'formatted_date': formatted_date,
-        'placeholder_fig':fig_sub,
-        'work_data' : dash.filtered.values.tolist(),
-        'work_columns':dash.filtered.columns,
-        'threshold':threshold_value,
-    }
+        context = {
+            'formatted_threshold':dash.text.get('formatted_threshold'),
+            'formatted_date': dash.text.get('formatted_date'),
+            'placeholder_fig':dash.fig_sub,
+            'work_data' : dash.filtered.values.tolist(),
+            'work_columns':dash.filtered.columns,
+            'threshold':dash.text.get('threshold_value'),
+        }
+
+    else:
+        type = request.POST.get("typeSelect")
+        start = request.POST.get("datePicker")
+        end = request.POST.get("EndPicker")
+        formatted_date = start + " ~ " + end 
+        threshold = request.POST.get("customerRange")
+        threshold_value = float(threshold)
+        formatted_threshold = f"{round(threshold_value*100)}%"
+        
+        dash.text = {
+            'formatted_threshold': formatted_threshold,
+            'formatted_date': formatted_date,
+            'threshold_value': threshold_value,
+        }
+
+        dash.filtered, dash.fig_sub = week_web_crawler(type, start, end, threshold) 
+
+        context = {
+            'formatted_threshold':formatted_threshold,
+            'formatted_date': formatted_date,
+            'placeholder_fig':dash.fig_sub,
+            'work_data' : dash.filtered.values.tolist(),
+            'work_columns':dash.filtered.columns,
+            'threshold':threshold_value,
+        }
 
     return render(request, 'WR_p1.html', context)
