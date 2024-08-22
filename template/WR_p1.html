@@ -75,4 +75,80 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<script>
+    document.getElementById("download_button").addEventListener("click", function () {
+        let table = document.getElementById('worktable');
+        let rows = table.getElementsByTagName("tr");
+        let data = [];
+
+        // Get table headers
+        let headerRow = table.getElementsByTagName("thead")[0].getElementsByTagName("tr")[0];
+        let headerCells = headerRow.getElementsByTagName("th");
+        let headerContent = [];
+        for (let j = 0; j < headerCells.length; j++) {
+            headerContent.push(headerCells[j].innerText);
+        }
+        data.push(headerContent);
+
+        // Get table rows
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let rowContent = [];
+            for (let j = 0; j < cells.length; j++) {
+                rowContent.push(cells[j].innerText);
+            }
+            data.push(rowContent);
+        }
+
+        // Create a new workbook and add the sheet
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.aoa_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, 'weekly_efficiency'); // 'Sheet1' can be changed to any desired sheet name
+
+        // Write the file
+        XLSX.writeFile(wb, "download.xlsx");
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#worktable').DataTable({"paging": true, scrollX: true, "lengthMenu": [10, 25, 50, 100, 200, 500]});
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tableId2 = "worktable"; 
+        const table2 = document.getElementById(tableId2);
+        
+        if (table2) {
+            const columnCount2 = table2.getElementsByTagName("th").length;
+            const percentColumnIndexes2 = [columnCount2];
+            const float2ColumnIndexes2 = [columnCount2 - 2, columnCount2 - 1]; 
+            
+            percentColumnIndexes2.forEach(index => {
+                const percentCells = table2.querySelectorAll(`tbody tr td:nth-child(${index}), tbody tr:last-child td:nth-child(${index})`);
+                percentCells.forEach(cell => {
+                    const value = parseFloat(cell.textContent);
+                    cell.textContent = (value * 100).toFixed(2) + "%";
+
+                    if (index === columnCount2 && value < 0.9) {
+                        cell.classList.add("low-percent");
+                        const row = cell.parentElement;
+                        row.classList.add("highlight-row");
+                    }
+                });
+            });
+            
+            float2ColumnIndexes2.forEach(index => {
+                const float2Cells = table2.querySelectorAll(`tbody tr td:nth-child(${index}), tbody tr:last-child td:nth-child(${index})`);
+                float2Cells.forEach(cell => {
+                    const value = parseFloat(cell.textContent);
+                    cell.textContent = value.toFixed(2);
+                });
+            });
+        }
+    });
+</script>
+
 </html>
