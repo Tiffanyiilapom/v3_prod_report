@@ -32,21 +32,12 @@ urlpatterns = [
     path('weekly/', SMT_views.weekly, name='weekly'),
     path('monthly/', SMT_views.monthly, name='monthly'),
 
-    path('', SMT_RT_views.daily, name="home"),  
-    path('smtrt_daily/', SMT_RT_views.daily, name='smtrt_daily'),
-    path('smtrt_weekly/', SMT_RT_views.weekly, name='smtrt_weekly'),
-    path('smtrt_monthly/', SMT_RT_views.monthly, name='smtrt_monthly'),
-
     #EOL
     path('eol_upload/', EOL_views.upload, name='eol_upload'),
     path('eol_daily/', EOL_views.daily, name='eol_daily'),
     path('eol_weekly/', EOL_views.weekly, name='eol_weekly'),
     path('eol_monthly/', EOL_views.monthly, name='eol_monthly'),
-
-    path('eolrt_daily/', EOL_RT_views.daily, name='eolrt_daily'),
-    path('eolrt_weekly/', EOL_RT_views.weekly, name='eolrt_weekly'),
-    path('eolrt_monthly/', EOL_RT_views.monthly, name='eolrt_monthly'),
-
+    
     #ASSY
     path('assy_upload/', ASSY_views.upload, name='assy_upload'),
     path('assy_daily/', ASSY_views.daily, name='assy_daily'),
@@ -54,6 +45,7 @@ urlpatterns = [
     path('assy_monthly/', ASSY_views.monthly, name='assy_monthly'),
 
     #WR
+    path('', WR_views.input, name="home"),  
     path('WR_input/', WR_views.input, name='WR_input'),
     path('WR_output/', WR_views.output, name='WR_output'),
 
